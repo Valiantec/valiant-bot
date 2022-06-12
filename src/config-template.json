@@ -1,0 +1,23 @@
+{
+    "prefix": "!",
+    "reportsChannel": "",
+    "reportsTargetChannel": "",
+    "welcomeChannel": "",
+    "rankUpMessagesChannel": "",
+    "welcomeMessage": "**Hey {member}, welcome to the server!**",
+    "activityExcludedChannels": [],
+    "ranks": [
+        {
+            "roleId": "",
+            "requiredPoints": 5
+        },
+        {
+            "roleId": "",
+            "requiredPoints": 100
+        },
+        {
+            "roleId": "",
+            "requiredPoints": 500
+        }
+    ]
+}
