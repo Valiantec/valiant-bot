@@ -1,4 +1,4 @@
-# inviting the bot
+# Inviting the bot
 You can invite the bot to your own server using this link:\
 https://discord.com/api/oauth2/authorize?client_id=896634815456108544&permissions=8&scope=bot
 
