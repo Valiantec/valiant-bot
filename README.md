@@ -11,7 +11,14 @@ https://discord.com/api/oauth2/authorize?client_id=896634815456108544&permission
 3. run `npm install`
 
 # Running the bot
-Open any terminal in the root directory of the bot run the following command: `npm start`
+1. Create your bot on the Discord Developer Portal and copy its token
+2. Create a `json` file called `secret.json` and place it in the root directory of the project (next to README.md)
+```json
+{
+    "botToken": "your_bot_token"
+}
+```
+3. Open any terminal in the root directory of the bot and run the command: `npm start`
 
 ## For auto re-run on crash
 run this from powershell
