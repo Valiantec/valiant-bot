@@ -1,7 +1,5 @@
 const { Permissions } = require('discord.js');
-const { forwardMessage } = require('../util/discord-utils');
 const BaseCommand = require('../classes/base-command');
-const { getMemberProfile } = require('../managers/data-manager');
 
 class TestCommand extends BaseCommand {
     static metadata = {

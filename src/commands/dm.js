@@ -1,6 +1,7 @@
 const { Permissions } = require('discord.js');
 const { forwardMessage } = require('../util/discord-utils');
 const BaseCommand = require('../classes/base-command');
+const UserError = require('../classes/errors/user-error');
 
 class DmCommand extends BaseCommand {
     static metadata = {
@@ -10,19 +11,20 @@ class DmCommand extends BaseCommand {
     };
 
     async execute() {
+        let x = 0;
         const args = this.parseArgs(1);
 
         const memberId = args[0];
-        const text = args[1];
+        let text = args[1];
 
         let member = null;
         try {
             member = await this.dMsg.guild.members.fetch(memberId);
         } catch (error) {
-            throw new UserError(
-                `Could not dm since <@${memberId}> is no longer in this server ❌`
-            );
+            throw new UserError(`Could not dm <@${memberId}> ❌`);
         }
+
+        text = `You received a message from **${this.dMsg.guild.name}**:\n${text}`;
 
         return forwardMessage(text, this.dMsg, member)
             .then(() => this.dMsg.reply(`✅ DM sent to ${member}`))

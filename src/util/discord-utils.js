@@ -16,7 +16,7 @@ module.exports = {
      * @throws {DiscordAPIError} if the bot can't send a message to the target
      */
     forwardMessage: async (text, sourceMsg, target) => {
-        const msg = { content: text, files: sourceMsg.attachments };
+        const msg = { content: text, attachments: sourceMsg.attachments, stickers: sourceMsg.stickers };
         return target.send(msg);
     },
 

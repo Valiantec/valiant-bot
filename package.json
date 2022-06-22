@@ -4,14 +4,14 @@
     "description": "",
     "main": "src/index.js",
     "scripts": {
-        "test": "node test/test.js",
-        "start": "node src/index.js"
+        "dev": "node src/index.js",
+        "start": "while($true) { node src/index.js }"
     },
     "author": "Valiantec",
     "license": "MIT",
     "dependencies": {
         "axios": "^0.26.1",
-        "discord.js": "^13.6.0",
+        "discord.js": "^13.8.0",
         "firebase-admin": "^10.0.2"
     }
 }

@@ -30,7 +30,7 @@ class WarnCommand extends BaseCommand {
             member = await this.dMsg.guild.members.fetch(memberId);
         } catch (error) {
             throw new UserError(
-                `Could not warn since <@${memberId}> is no longer in this server ❌`
+                `Could not find <@${memberId}> ❌`
             );
         }
 

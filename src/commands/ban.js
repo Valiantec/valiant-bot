@@ -10,7 +10,7 @@ class BanCommand extends BaseCommand {
     static metadata = {
         commandName: 'ban',
         description: 'Bans a member and adds it to their profile',
-        permissions: [Permissions.FLAGS.MANAGE_MESSAGES]
+        permissions: [Permissions.FLAGS.ADMINISTRATOR]
     };
 
     async execute() {
