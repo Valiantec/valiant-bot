@@ -5,12 +5,16 @@
     "main": "src/index.js",
     "scripts": {
         "dev": "node src/index.js",
-        "start": "while($true) { node src/index.js }"
+        "start": "node src/index.js",
+        "gencommand": "node src/generator/file-generator.js"
     },
     "author": "Valiantec",
     "license": "MIT",
     "dependencies": {
+        "@discordjs/builders": "^0.15.0",
+        "@discordjs/rest": "^0.5.0",
         "axios": "^0.26.1",
+        "discord-api-types": "^0.36.1",
         "discord.js": "^13.8.0",
         "firebase-admin": "^10.0.2"
     }

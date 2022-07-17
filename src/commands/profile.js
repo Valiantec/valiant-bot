@@ -4,7 +4,7 @@ const UserError = require('../classes/errors/user-error');
 const { getMemberProfile } = require('../managers/data-manager');
 const { oneLineEmbed } = require('../util/embed-shop');
 
-class ProfileCommand extends BaseCommand {
+class Command extends BaseCommand {
     static metadata = {
         commandName: 'profile',
         description: "Shows a member's full profile",
@@ -30,14 +30,14 @@ class ProfileCommand extends BaseCommand {
         const msgContent = `\`\`\`json\n${profileString}\n\`\`\``;
 
         if (profileString.length < 1800) {
-            await this.dMsg.reply({
+            await this.dMsg.channel.send({
                 embeds: [oneLineEmbed(`Profile owner: <@${memberId}>`)],
                 content: msgContent
             });
         } else {
-            await this.dMsg.reply('Memeber profile is too large');
+            await this.dMsg.channel.send('Memeber profile is too large');
         }
     }
 }
 
-module.exports = ProfileCommand;
+module.exports = Command;

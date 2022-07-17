@@ -16,7 +16,11 @@ class BaseCommand {
 
     parseArgs(argCount) {
 
-        let temp = this.argsString;
+        let temp = this.argsString.trim();
+
+        if (argCount == 0) {
+            return temp;
+        }
 
         const args = [];
 

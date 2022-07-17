@@ -4,9 +4,10 @@ const InvalidArgumentsError = require('../classes/errors/invalid-arguments-error
 const { oneLineEmbed } = require('../util/embed-shop');
 const { getConfig, writeConfig } = require('../managers/data-manager');
 
-class SetPrefixCommand extends BaseCommand {
+class Command extends BaseCommand {
     static metadata = {
         commandName: 'setprefix',
+        description: 'Sets the command prefix for this server',
         permissions: [Permissions.FLAGS.ADMINISTRATOR]
     };
 
@@ -30,4 +31,4 @@ class SetPrefixCommand extends BaseCommand {
     }
 }
 
-module.exports = SetPrefixCommand;
+module.exports = Command;

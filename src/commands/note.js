@@ -6,7 +6,9 @@ const {
     writeMemberProfile
 } = require('../managers/data-manager');
 
-class NoteCommand extends BaseCommand {
+const SEPARATOR = ',';
+
+class Command extends BaseCommand {
     static metadata = {
         commandName: 'note',
         description: "Puts a note on a member's profile",
@@ -16,7 +18,7 @@ class NoteCommand extends BaseCommand {
     async execute() {
         const args = this.parseArgs(1);
 
-        const memberId = args[0];
+        const memberIds = args[0];
         const note = args[1];
 
         if (!note) {
@@ -25,32 +27,39 @@ class NoteCommand extends BaseCommand {
             );
         }
 
-        const memberProfile = await getMemberProfile(
-            this.dMsg.guildId,
-            memberId
-        );
+        memberIds.split(SEPARATOR).forEach(async memberId => {
+            try {
+                const memberProfile = await getMemberProfile(
+                    this.dMsg.guildId,
+                    memberId
+                );
 
-        if (!memberProfile.record) {
-            memberProfile.record = {};
-        }
+                if (!memberProfile.record) {
+                    memberProfile.record = {};
+                }
 
-        if (!memberProfile.record.notes) {
-            memberProfile.record.notes = [];
-        }
+                if (!memberProfile.record.notes) {
+                    memberProfile.record.notes = [];
+                }
 
-        memberProfile.record.notes.push({
-            by: this.dMsg.author.tag,
-            text: note,
-            date: new Date().toISOString()
+                memberProfile.record.notes.push({
+                    by: this.dMsg.author.tag,
+                    text: note,
+                    date: new Date().toISOString()
+                });
+
+                await writeMemberProfile(this.dMsg.guildId, memberProfile);
+                this.dMsg.channel
+                    .send(`<@${memberId}>: Notes updated ✅`)
+                    .catch(err => console.log(err));
+            } catch (err) {
+                console.log(err);
+                this.dMsg.channel
+                    .send(`<@${memberId}>: Failed to update notes ❌`)
+                    .catch(err => console.log(err));
+            }
         });
-
-
-        writeMemberProfile(this.dMsg.guildId, memberProfile)
-            .then(() => this.dMsg.reply(`<@${memberId}>: Notes updated ✅`))
-            .catch(() =>
-                this.dMsg.reply(`<@${memberId}>: Failed to update notes ❌`)
-            );
     }
 }
 
-module.exports = NoteCommand;
+module.exports = Command;

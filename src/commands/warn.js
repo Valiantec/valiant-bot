@@ -1,12 +1,12 @@
 const BaseCommand = require('../classes/base-command');
 const UserError = require('../classes/errors/user-error');
 const { Permissions } = require('discord.js');
-const {
-    getMemberProfile,
-    writeMemberProfile
-} = require('../managers/data-manager');
+const dataManager = require('../managers/data-manager');
+const { isMod } = require('../util/discord-utils');
 
-class WarnCommand extends BaseCommand {
+const SEPARATOR = ',';
+
+class Command extends BaseCommand {
     static metadata = {
         commandName: 'warn',
         description: 'Sends a warning to a member and adds it to their profile',
@@ -16,7 +16,7 @@ class WarnCommand extends BaseCommand {
     async execute() {
         const args = this.parseArgs(1);
 
-        const memberId = args[0];
+        const memberIds = args[0];
         const reason = args[1];
 
         if (!reason) {
@@ -25,56 +25,64 @@ class WarnCommand extends BaseCommand {
             );
         }
 
-        let member = null;
-        try {
-            member = await this.dMsg.guild.members.fetch(memberId);
-        } catch (error) {
-            throw new UserError(
-                `Could not find <@${memberId}> ❌`
+        memberIds.split(SEPARATOR).forEach(async memberId => {
+            let member = null;
+            try {
+                member = await this.dMsg.guild.members.fetch(memberId);
+            } catch (error) {
+                this.dMsg.channel
+                    .send(`Could not find <@${memberId}> ❌`)
+                    .catch(err => cnosole.log(err));
+                return;
+            }
+
+            if (member && isMod(member)) {
+                this.dMsg.channel
+                    .send(`<@${memberId}>: Failed to warn ❌`)
+                    .catch(err => console.log(err));
+                return;
+            }
+
+            const memberProfile = await dataManager.getMemberProfile(
+                this.dMsg.guildId,
+                memberId
             );
-        }
 
-        if (
-            member.permissions.has(Permissions.FLAGS.MANAGE_MESSAGES) ||
-            member.permissions.has(Permissions.FLAGS.ADMINISTRATOR)
-        ) {
-            throw new UserError("You can't warn this member");
-        }
+            if (!memberProfile.record) {
+                memberProfile.record = {};
+            }
 
-        const memberProfile = await getMemberProfile(
-            this.dMsg.guildId,
-            memberId
-        );
+            if (!memberProfile.record.warnings) {
+                memberProfile.record.warnings = [];
+            }
 
-        if (!memberProfile.record) {
-            memberProfile.record = {};
-        }
-
-        if (!memberProfile.record.warnings) {
-            memberProfile.record.warnings = [];
-        }
-
-        memberProfile.record.warnings.push({
-            by: this.dMsg.author.tag,
-            text: reason,
-            date: new Date().toISOString()
-        });
-
-        memberProfile.tag = member.user.tag;
-
-        writeMemberProfile(this.dMsg.guildId, memberProfile);
-
-        member
-            .send(
-                `You received a warning from **${this.dMsg.guild.name}**:\n${reason}`
-            )
-            .then(() => this.dMsg.reply(`${member}: Warned ✅`))
-            .catch(() => {
-                this.dMsg.reply(
-                    `${member}: Warning logged, but failed to DM ⚠`
-                );
+            memberProfile.record.warnings.push({
+                by: this.dMsg.author.tag,
+                text: reason,
+                date: new Date().toISOString()
             });
+
+            memberProfile.tag = member.user.tag;
+
+            dataManager
+                .writeMemberProfile(this.dMsg.guildId, memberProfile)
+                .catch(err => {
+                    console.log(err);
+                    this.dMsg.channel.send(
+                        `<@${memberId}>: Failed to add warning to profile`
+                    );
+                });
+
+            member
+                .send(
+                    `You received a warning from **${this.dMsg.guild.name}**:\n${reason}`
+                )
+                .then(() => this.dMsg.channel.send(`<@${memberId}>: Warned ✅`))
+                .catch(() => {
+                    this.dMsg.channel.send(`<@${memberId}>: Failed to DM ⚠`);
+                });
+        });
     }
 }
 
-module.exports = WarnCommand;
+module.exports = Command;

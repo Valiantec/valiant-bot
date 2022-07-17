@@ -3,7 +3,7 @@
     "reportsChannel": "",
     "reportsTargetChannel": "",
     "welcomeChannel": "",
-    "rankUpMessagesChannel": "",
+    "ranksChannel": "",
     "welcomeMessage": "**Hey {member}, welcome to the server!**",
     "activityExcludedChannels": [],
     "ranks": [

@@ -5,7 +5,7 @@ const {
 } = require('../managers/data-manager');
 const BaseCommand = require('../classes/base-command');
 
-class ClearRecordCommand extends BaseCommand {
+class Command extends BaseCommand {
     static metadata = {
         commandName: 'clearrecord',
         description:
@@ -27,8 +27,8 @@ class ClearRecordCommand extends BaseCommand {
 
         writeMemberProfile(this.dMsg.guildId, memberProfile);
 
-        this.dMsg.reply(`<@${memberId}>: Record cleared ✅`);
+        this.dMsg.channel.send(`<@${memberId}>: Record cleared ✅`);
     }
 }
 
-module.exports = ClearRecordCommand;
+module.exports = Command;

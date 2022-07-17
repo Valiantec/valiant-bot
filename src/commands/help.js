@@ -8,7 +8,7 @@ const { canExecute } = require('../util/utils');
 
 const commandsMetadata = new Map();
 
-class HelpCommand extends BaseCommand {
+class Command extends BaseCommand {
     static metadata = {
         commandName: 'help',
         description:
@@ -30,7 +30,7 @@ class HelpCommand extends BaseCommand {
             embed = singleCommandHelpEmbed(metadata);
         } else {
             const authorizedCommandsMetaData = [];
-            commandsMetadata.forEach((v, k) => {
+            commandsMetadata.forEach(v => {
                 if (canExecute(this.dMsg.member, v.permissions)) {
                     authorizedCommandsMetaData.push(v);
                 }
@@ -38,18 +38,22 @@ class HelpCommand extends BaseCommand {
             embed = helpCommandEmbed(authorizedCommandsMetaData);
         }
 
-        this.dMsg.reply({ embeds: [embed] });
+        this.dMsg.channel.send({ embeds: [embed] });
     }
 }
 
-module.exports = HelpCommand;
+module.exports = Command;
 
 fs.readdirSync('./src/commands/')
     .filter(fileName => fileName.endsWith('.js'))
     .forEach(fileName => {
-        const commandClass = require(`./${fileName}`);
-        commandsMetadata.set(
-            commandClass.metadata.commandName,
-            commandClass.metadata
-        );
+        try {
+            const commandClass = require(`./${fileName}`);
+            commandsMetadata.set(
+                commandClass.metadata.commandName,
+                commandClass.metadata
+            );
+        } catch (err) {
+            console.log(`❌ help.js: [Error constructing help for ${fileName}]`);
+        }
     });

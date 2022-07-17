@@ -2,9 +2,10 @@ const BaseCommand = require('../classes/base-command');
 const { getConfig } = require('../managers/data-manager');
 const { oneLineEmbed } = require('../util/embed-shop');
 
-class PrefixCommand extends BaseCommand {
+class Command extends BaseCommand {
     static metadata = {
-        commandName: 'prefix'
+        commandName: 'prefix',
+        description: 'Shows the command prefix for this server'
     };
 
     async execute() {
@@ -14,8 +15,8 @@ class PrefixCommand extends BaseCommand {
             `The prefix for this server is: \`${prefix}\``
         );
 
-        await this.dMsg.reply({ embeds: [embed] });
+        await this.dMsg.channel.send({ embeds: [embed] });
     }
 }
 
-module.exports = PrefixCommand;
+module.exports = Command;

@@ -1,11 +1,11 @@
 const BaseCommand = require('../classes/base-command');
 const UserError = require('../classes/errors/user-error');
-const { Permissions } = require('discord.js');
 const {
     getMemberProfile,
     writeMemberProfile
 } = require('../managers/data-manager');
-const { isMod, isAdmin } = require('../util/discord-utils');
+const { isMod } = require('../util/discord-utils');
+const { PermissionFlagsBits } = require('discord-api-types/v10');
 
 const SEPARATOR = ',';
 
@@ -13,7 +13,7 @@ class Command extends BaseCommand {
     static metadata = {
         commandName: 'ban',
         description: 'Bans a member and adds it to their profile',
-        permissions: [Permissions.FLAGS.ADMINISTRATOR]
+        permissions: PermissionFlagsBits.Administrator
     };
 
     async execute() {

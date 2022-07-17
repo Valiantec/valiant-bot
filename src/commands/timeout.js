@@ -6,21 +6,25 @@ const {
     writeMemberProfile
 } = require('../managers/data-manager');
 const InvalidArgumentsError = require('../classes/errors/invalid-arguments-error');
+const { isMod } = require('../util/discord-utils');
 
-class TimeoutCommand extends BaseCommand {
+const SEPARATOR = ',';
+
+class Command extends BaseCommand {
     static metadata = {
         commandName: 'timeout',
-        description: 'Timeout a member and add it to their profile',
+        description:
+            'Timeout a member for x minutes and add it to their profile (DMs the reason to the member)',
         permissions: [Permissions.FLAGS.MANAGE_MESSAGES]
     };
 
     async execute() {
         const args = this.parseArgs(2);
 
-        const memberId = args[0];
+        const memberIds = args[0];
         let duration = 0;
         try {
-            duration = parseInt(args[1]) * 60 * 1000;
+            duration = parseInt(args[1]);
         } catch (error) {
             throw new InvalidArgumentsError();
         }
@@ -32,65 +36,76 @@ class TimeoutCommand extends BaseCommand {
             );
         }
 
-        const member = await this.dMsg.guild.members.fetch(memberId);
+        memberIds.split(SEPARATOR).forEach(async memberId => {
+            const member = await this.dMsg.guild.members.fetch(memberId);
 
-        if (
-            member.permissions.has(Permissions.FLAGS.MANAGE_MESSAGES) ||
-            member.permissions.has(Permissions.FLAGS.ADMINISTRATOR)
-        ) {
-            throw new UserError("You can't timeout this member");
-        }
-
-        member.timeout(duration, reason).then(async () => {
-            let reply = '';
-            if (duration > 0) {
-                reply = `${member}: Timed out for ${duration} minutes ✅`;
-
-                const memberProfile = await getMemberProfile(
-                    this.dMsg.guildId,
-                    memberId
-                );
-
-                if (!memberProfile.record) {
-                    memberProfile.record = {};
-                }
-
-                if (!memberProfile.record.timeouts) {
-                    memberProfile.record.timeouts = [];
-                }
-
-                memberProfile.record.timeouts.push({
-                    by: this.dMsg.author.tag,
-                    text: reason,
-                    duration: duration * 60 * 1000,
-                    date: new Date().toISOString()
-                });
-
-                memberProfile.tag = member.user.tag;
-
-                writeMemberProfile(this.dMsg.guildId, memberProfile);
-
-                try {
-                    await member.send(
-                        `You received a timeout in **${this.dMsg.guild.name}**:\n${reason}`
-                    );
-                } catch (err) {
-                    reply += ', but failed to DM ⚠';
-                }
-            } else {
-                reply = `${member}: Timeout removed ✅`;
-
-                try {
-                    await member.send(
-                        `Your timeout in **${this.dMsg.guild.name}** has been removed`
-                    );
-                } catch (err) {
-                    reply += ', but failed to DM ⚠';
-                }
+            if (member && isMod(member)) {
+                this.dMsg.channel
+                    .send(`<@${memberId}>: Failed to timeout ❌`)
+                    .catch(err => console.log(err));
+                return;
             }
-            this.dMsg.reply(reply);
+
+            member
+                ?.timeout(duration * 60 * 1000, reason)
+                .then(async () => {
+                    let reply = '';
+                    if (duration > 0) {
+                        reply = `${member}: Timed out for ${duration} minutes ✅`;
+
+                        const memberProfile = await getMemberProfile(
+                            this.dMsg.guildId,
+                            memberId
+                        );
+
+                        if (!memberProfile.record) {
+                            memberProfile.record = {};
+                        }
+
+                        if (!memberProfile.record.timeouts) {
+                            memberProfile.record.timeouts = [];
+                        }
+
+                        memberProfile.record.timeouts.push({
+                            by: this.dMsg.author.tag,
+                            text: reason,
+                            duration: duration,
+                            date: new Date().toISOString()
+                        });
+
+                        memberProfile.tag = member.user.tag;
+
+                        await writeMemberProfile(
+                            this.dMsg.guildId,
+                            memberProfile
+                        ).catch(err => {
+                            console.log(err);
+                            reply += '\nFailed to update profile';
+                        });
+
+                        try {
+                            await member.send(
+                                `You received a timeout in **${this.dMsg.guild.name}**:\n${reason}`
+                            );
+                        } catch (err) {
+                            reply += '\nFailed to DM ⚠';
+                        }
+                    } else {
+                        reply = `<@${memberId}>: Timeout removed ✅`;
+
+                        try {
+                            await member.send(
+                                `Your timeout in **${this.dMsg.guild.name}** has been removed`
+                            );
+                        } catch (err) {
+                            reply += '\nFailed to DM ⚠';
+                        }
+                    }
+                    this.dMsg.channel.send(reply).catch(err => console.log(err));
+                })
+                .catch(err => console.log(err));
         });
     }
 }
 
-module.exports = TimeoutCommand;
+module.exports = Command;

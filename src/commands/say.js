@@ -2,7 +2,7 @@ const { Permissions } = require('discord.js');
 const BaseCommand = require('../classes/base-command');
 const { forwardMessage } = require('../util/discord-utils');
 
-class SayCommand extends BaseCommand {
+class Command extends BaseCommand {
     static metadata = {
         commandName: 'say',
         description: 'Makes the bot say something in the specified channel',
@@ -18,11 +18,11 @@ class SayCommand extends BaseCommand {
         const channel = await this.dMsg.guild.channels.fetch(channelId);
 
         forwardMessage(text, this.dMsg, channel)
-            .then(() => this.dMsg.reply(`✅ Message sent in <#${channelId}>`))
+            .then(() => this.dMsg.channel.send(`✅ Message sent in <#${channelId}>`))
             .catch(() =>
-                this.dMsg.reply(`❌ Failed to send message in <#${channelId}>`)
+                this.dMsg.channel.send(`❌ Failed to send message in <#${channelId}>`)
             );
     }
 }
 
-module.exports = SayCommand;
+module.exports = Command;

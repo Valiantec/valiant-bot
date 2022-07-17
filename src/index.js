@@ -2,9 +2,11 @@ const Discord = require('discord.js');
 const fs = require('fs');
 const logger = require('./util/logger');
 
+logger.integrate();
+
 process.on('uncaughtException', err => {
     console.log('######### Uncaught Exception ##########');
-    console.log(err.stack);
+    console.log(err);
     process.exit();
 });
 
@@ -21,28 +23,37 @@ const client = new Discord.Client({
 
 client.commands = new Discord.Collection();
 
-// Load Commands
+console.log('Loading commands');
 fs.readdirSync('src/commands')
     .filter(fileName => fileName.endsWith('.js'))
     .forEach(fileName => {
-        const commandClass = require(`./commands/${fileName}`);
-        client.commands.set(
-            commandClass.metadata.commandName.toLowerCase(),
-            commandClass
-        );
-        logger.log(`✅ ${commandClass.metadata.commandName} command loaded`);
-    });
-
-// Load Event Handlers
-fs.readdirSync('src/event-handlers')
-    .filter(fileName => fileName.endsWith('.js'))
-    .forEach(fileName => {
-        const handler = require(`./event-handlers/${fileName}`);
-        if (handler.execOnce) {
-            client.once(handler.eventName, handler.execute);
-        } else {
-            client.on(handler.eventName, handler.execute);
+        try {
+            const Command = require(`./commands/${fileName}`);
+            client.commands.set(
+                Command.metadata.commandName.toLowerCase(),
+                Command
+            );
+            console.log(`✅ command: ${fileName}`);
+        } catch (err) {
+            console.log(`❌ command: ${fileName} [Failed to load]`);
         }
     });
 
-client.login(require('../secret.json').botToken);
+console.log('Loading events');
+fs.readdirSync('src/events')
+    .filter(fileName => fileName.endsWith('.js'))
+    .forEach(fileName => {
+        try {
+            const handler = require(`./events/${fileName}`);
+            if (handler.execOnce) {
+                client.once(handler.eventName, handler.execute);
+            } else {
+                client.on(handler.eventName, handler.execute);
+            }
+            console.log(`🟢 event: ${fileName}`);
+        } catch (err) {
+            console.log(`🔴 event: ${fileName} [Failed to load]`);
+        }
+    });
+
+client.login(require('../secret.json').botToken).then(()=>console.log(`Logged in`));

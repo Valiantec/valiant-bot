@@ -1,7 +1,7 @@
 const { Permissions } = require('discord.js');
 const BaseCommand = require('../classes/base-command');
 
-class TestCommand extends BaseCommand {
+class Command extends BaseCommand {
     static metadata = {
         commandName: 'test',
         permissions: [Permissions.FLAGS.ADMINISTRATOR]
@@ -12,4 +12,4 @@ class TestCommand extends BaseCommand {
     }
 }
 
-module.exports = TestCommand;
+module.exports = Command;

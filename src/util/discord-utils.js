@@ -1,5 +1,4 @@
 const {
-    Guild,
     Message,
     GuildMember,
     TextChannel,
@@ -16,8 +15,7 @@ module.exports = {
      * @throws {DiscordAPIError} if the bot can't send a message to the target
      */
     forwardMessage: async (text, sourceMsg, target) => {
-        const msg = { content: text, attachments: sourceMsg.attachments, stickers: sourceMsg.stickers };
-        return target.send(msg);
+        return target.send({ content: text, files:[...sourceMsg.attachments.values()] });
     },
 
     /**

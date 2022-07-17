@@ -1,12 +1,15 @@
+const { Message } = require('discord.js');
 const UserError = require('../classes/errors/user-error');
 const { getConfig } = require('../managers/data-manager');
-const { forwardMessage } = require('../util/discord-utils');
+const { forwardMessage, isAdmin } = require('../util/discord-utils');
 const embedShop = require('../util/embed-shop');
-const logger = require('../util/logger');
 const { canExecute } = require('../util/utils');
 
 module.exports = {
     eventName: 'messageCreate',
+    /**
+     * @param {Message} msg
+     */
     execute: async msg => {
         // Ignore bot messages
         if (msg.author.bot) {
@@ -17,33 +20,39 @@ module.exports = {
 
         // Handle DMs
         if (!guild) {
-            logger.log(`DM from [${msg.author.id}]: ${msg.content}`);
+            console.log(`DM from [${msg.author.id}]: ${msg.content}`);
+
             forwardMessage(
                 `**DM from <@${msg.author.id}>:**\n${msg.content}`,
                 msg,
                 msg.client.application.owner
             ).catch(err => {
-                logger.log(err.stack);
+                console.log(err.stack);
             });
+
             return;
         }
 
-        // TODO Handle Report Channels
-
-        // Give points to member
-        // let memberProfile = await getMemberProfile(msg.guildId, msg.member.id);
-        // if (memberProfile) {
-        //     memberProfile.points++;
-        // } else {
-        //     memberProfile = {
-        //         id: msg.member.id,
-        //         points: 1
-        //     };
-        // }
-        // writeMemberProfile(msg.guildId, memberProfile);
-
-        // Load guild config
         const config = await getConfig(msg.guildId);
+
+        // Handle Report Channels
+        if (msg.channelId == config.reportsChannel) {
+            // && !isAdmin(msg.member)) {
+            try {
+                const target = await msg.guild.channels.fetch(
+                    config.reportsTargetChannel
+                );
+                await forwardMessage(
+                    `**Report from <@${msg.author.id}>:**\n${msg.content}`,
+                    msg,
+                    target
+                );
+                msg.delete().catch(err => console.log(err));
+            } catch (err) {
+                console.log(err);
+                msg.channel.send('Failed to send your report');
+            }
+        }
 
         // Handle commands
         if (msg.content.startsWith(config.prefix)) {
@@ -52,36 +61,33 @@ module.exports = {
                 .split(' ')[0]
                 .toLowerCase();
 
-            const commandClass = msg.client.commands.get(commandName);
+            const Command = msg.client.commands.get(commandName);
 
-            if (!commandClass) {
+            if (!Command) {
                 return;
             }
 
-            if (canExecute(msg.member, commandClass.metadata.permissions)) {
+            if (canExecute(msg.member, Command.metadata.permissions)) {
                 const args = msg.content
                     .substring(config.prefix.length)
                     .trim()
                     .substring(commandName.length)
                     .trimStart();
-                const command = new commandClass(msg, args);
+
+                const command = new Command(msg, args);
+
                 command.execute().catch(err => {
                     if (err instanceof UserError) {
-                        msg.reply({
+                        msg.channel.send({
                             embeds: [
                                 embedShop.oneLineEmbed(
-                                    `${
-                                        err.message
-                                            ? err.message
-                                            : 'Something went wrong'
-                                    }`,
-                                    'danger',
-                                    null
+                                    err.message || 'Something went wrong',
+                                    'danger'
                                 )
                             ]
                         });
                     } else {
-                        logger.log(err.stack);
+                        console.log(err.stack);
                     }
                 });
             }
