@@ -16,11 +16,11 @@ https://discord.com/api/oauth2/authorize?client_id=896634815456108544&permission
 ```
 BOT_TOKEN="REPLACE_WITH_YOUR_BOT_TOKEN"
 ```
-3. Create a firebase project for the bot, then enable Firestore in the Firebase console, then create a service account key and downoad it to `src\data\third-party\firebase\firebase-service-account-key.json`
+3. Create a firebase project for the bot, then enable Firestore in the Firebase console, then create a service account key and download it to `src\data\third-party\firebase\firebase-service-account-key.json`
 4. Open any terminal in the root directory of the bot and run the command: `npm start`
 
 ## For auto re-run on crash
-run this from powershell
+Run using `./run.ps1` or run this command from powershell
 ```ps1
 while ($true) {
     npm start;
