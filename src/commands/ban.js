@@ -1,80 +1,33 @@
+const { PermissionFlagsBits } = require('discord.js');
 const BaseCommand = require('../classes/base-command');
 const UserError = require('../classes/errors/user-error');
-const { Permissions } = require('discord.js');
-const {
-    getMemberProfile,
-    writeMemberProfile
-} = require('../managers/data-manager');
-const { isMod, isAdmin } = require('../util/discord-utils');
-
-const SEPARATOR = ',';
+const moderation = require('../service/moderation');
+const { multiIDStringToList } = require('../util/str-utils');
 
 class Command extends BaseCommand {
     static metadata = {
         commandName: 'ban',
         description: 'Bans a member and adds it to their profile',
-        permissions: [Permissions.FLAGS.ADMINISTRATOR]
+        permissions: PermissionFlagsBits.ManageMessages
     };
 
     async execute() {
         const args = this.parseArgs(1);
 
-        const memberIds = args[0];
-        const reason = args[1];
+        const memberIds = args[0]?.replace(/[<@>]/g, '');
+        const text = args[1];
 
-        if (!reason) {
-            throw new UserError(
-                "You can't ban a member without providing a reason"
-            );
+        if (!text) {
+            throw new UserError("You can't ban a member without providing a reason");
         }
 
-        memberIds.split(SEPARATOR).forEach(async memberId => {
+        multiIDStringToList(memberIds).forEach(async memberId => {
             try {
-                const member = await this.dMsg.guild.members
-                    .fetch(memberId)
-                    .catch(() => {});
-
-                if (member && isMod(member)) {
-                    this.dMsg.channel
-                        .send(`<@${memberId}>: Failed to ban ❌`)
-                        .catch(err => console.log(err));
-                    return;
-                }
-
-                await this.dMsg.guild.bans.create(memberId, {
-                    days: 7,
-                    reason: reason
-                });
-
-                this.dMsg.channel
-                    .send(`<@${memberId}>: Banned ✅`)
-                    .catch(err => console.log(err));
-
-                const memberProfile = await getMemberProfile(
-                    this.dMsg.guildId,
-                    memberId
-                );
-
-                if (!memberProfile.record) {
-                    memberProfile.record = {};
-                }
-
-                if (!memberProfile.record.bans) {
-                    memberProfile.record.bans = [];
-                }
-
-                memberProfile.record.bans.push({
-                    by: this.dMsg.author.tag,
-                    text: reason,
-                    date: new Date().toISOString()
-                });
-
-                await writeMemberProfile(this.dMsg.guildId, memberProfile);
-            } catch (err) {
-                console.log(err);
-                this.dMsg.channel
-                    .send(`<@${memberId}>: Something went wrong ❌`)
-                    .catch(err => console.log(err));
+                await moderation.doBan(this.dMsg, memberId, text);
+                this.dMsg.channel.send(`✅ Banned <@${memberId}>`).catch(err => console.log(err));
+            } catch (e) {
+                console.log(e);
+                this.dMsg.channel.send(`❌ Failed to ban <@${memberId}>`).catch(err => console.log(err));
             }
         });
     }

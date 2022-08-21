@@ -11,6 +11,7 @@ const commandsMetadata = new Map();
 class Command extends BaseCommand {
     static metadata = {
         commandName: 'help',
+        aliases: ['h'],
         description:
             'Shows commands available to the person who initiated the command'
     };

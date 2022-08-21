@@ -2,19 +2,19 @@ const old = {};
 
 const log = (...params) => {
     old.log(`[${new Date().toLocaleString()}]`, ...params);
-}
+};
 
 const info = (...params) => {
     old.info(`[${new Date().toLocaleString()}]`, ...params);
-}
+};
 
 const warn = (...params) => {
     old.warn(`[${new Date().toLocaleString()}]`, ...params);
-}
+};
 
 const error = (...params) => {
     old.error(`[${new Date().toLocaleString()}]`, ...params);
-}
+};
 
 module.exports = {
     integrate: () => {

@@ -1,5 +1,5 @@
 const BaseCommand = require('../classes/base-command');
-const { MessageEmbed } = require('discord.js');
+const { EmbedBuilder } = require('discord.js');
 
 class Command extends BaseCommand {
     static metadata = {
@@ -10,7 +10,7 @@ class Command extends BaseCommand {
     async execute() {
         const args = this.parseArgs(0).split(';');
 
-        const embed = new MessageEmbed()
+        const embed = new EmbedBuilder()
             .setTitle(args[args.length - 1].trim())
             .setColor('#ffffff');
         let body = '';

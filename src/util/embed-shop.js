@@ -1,9 +1,9 @@
-const { MessageEmbed } = require('discord.js');
-const { ERROR_COLOR, WARNING_COLOR, SUCCESS_COLOR, HELP_COLOR } = require('../constants');
+const { EmbedBuilder, Colors } = require('discord.js');
+const { ERROR_COLOR, WARNING_COLOR, SUCCESS_COLOR, HELP_COLOR } = require('../config/config');
 
 module.exports = {
     oneLineEmbed: (text, type = null, colorResolvable = null, showIcon = false) => {
-        const embed = new MessageEmbed();
+        const embed = new EmbedBuilder();
 
         if (type == 'danger') {
             embed.setDescription((showIcon ? '❌ ' : '') + text);
@@ -16,7 +16,7 @@ module.exports = {
             embed.setColor(SUCCESS_COLOR);
         } else {
             embed.setDescription(text);
-            embed.setColor('#ffffee');
+            embed.setColor(Colors.White);
         }
 
         if (colorResolvable) {
@@ -26,28 +26,34 @@ module.exports = {
         return embed;
     },
 
-    singleCommandHelpEmbed: (metadata) => {
-        const embed = new MessageEmbed().setTitle('Command: ' + metadata.commandName).setColor(HELP_COLOR);
+    singleCommandHelpEmbed: metadata => {
+        const embed = new EmbedBuilder().setTitle('Command: ' + metadata.commandName).setColor(HELP_COLOR);
 
         if (metadata.description) {
-            embed.addField('Description', metadata.description);
+            embed.addFields([{ name: 'Description', value: metadata.description }]);
         }
 
         if (metadata.aliases?.length > 0) {
-            embed.addField('Aliases', metadata.aliases.join(', '));
+            embed.addFields([{ name: 'Aliases', value: metadata.aliases.join(', ') }]);
         }
 
         if (metadata.args?.length > 0) {
-            embed.addField('Arguments', metadata.args.join(', '));
+            embed.addFields([{ name: 'Arguments', value: metadata.args.join(', ') }]);
         }
 
         return embed;
     },
 
-    helpCommandEmbed: (commandsMetaData) => {
-        const embed = new MessageEmbed().setTitle('Commands:').setColor(HELP_COLOR);
-
-        commandsMetaData.forEach((meta) => embed.addField(meta.commandName, meta.description || '-'));
+    helpCommandEmbed: commandsMetaData => {
+        const embed = new EmbedBuilder().setTitle('Commands:').setColor(HELP_COLOR);
+        const fields = [];
+        commandsMetaData.forEach(meta =>
+            fields.push({
+                name: meta.commandName,
+                value: meta.description || '-'
+            })
+        );
+        embed.addFields(fields);
 
         return embed;
     }

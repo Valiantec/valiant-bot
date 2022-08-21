@@ -7,7 +7,7 @@ module.exports = {
      * @param {string[]} commandPermissions
      */
     canExecute: (member, commandPermissions) => {
-        if (commandPermissions?.length > 0) {
+        if (commandPermissions) {
             return member.permissions.has(commandPermissions, true);
         }
 
@@ -26,10 +26,7 @@ module.exports = {
             randomIndex = Math.floor(Math.random() * currentIndex);
             currentIndex--;
 
-            [array[currentIndex], array[randomIndex]] = [
-                array[randomIndex],
-                array[currentIndex]
-            ];
+            [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
         }
     }
 };

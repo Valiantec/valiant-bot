@@ -1,13 +1,14 @@
-const { Guild } = require('discord.js');
-const { createGuildProfile } = require('../managers/data-manager');
+const { Guild, Events } = require('discord.js');
+const repo = require('../data/repository');
 
 module.exports = {
-    eventName: 'guildCreate',
+    eventName: Events.GuildCreate,
     /**
-     * @param {Guild} guild
+     * 
+     * @param {Guild} guild 
      */
-    execute: guild => {
+    execute: async guild => {
         console.log(`+ Joined Guild: ${guild.name}`);
-        createGuildProfile(guild.id).catch(err => console.log(err));
+        await repo.createGuildProfile(guild.id).catch(err => console.log(err));
     }
 };

@@ -1,21 +1,32 @@
-const { GuildMember } = require('discord.js');
-const { createMemberProfile, getConfig } = require('../managers/data-manager');
+const { GuildMember, Events } = require('discord.js');
+const repo = require('../data/repository');
 
 module.exports = {
-    eventName: 'guildMemberAdd',
+    eventName: Events.GuildMemberAdd,
     /**
      * @param {GuildMember} member
      */
     execute: async member => {
-        createMemberProfile(member.guild.id, member.id).catch(() => {});
+        if (member.user.bot) {
+            return;
+        }
 
-        const config = await getConfig(member.guild.id);
+        repo.createMemberProfile(member.guild.id, member.id).catch(() => {});
 
-        const welcomeMsg = config.welcomeMessage.replace('{member}', member);
+        const config = await repo.getGuildConfig(member.guild.id);
 
-        const welcomeChannel = member.guild.channels.cache.get(
+        const welcomeChannel = await member.guild.channels.fetch(
             config.welcomeChannel
         );
-        welcomeChannel?.send(welcomeMsg).catch(err => console.log(err.stack));
+
+        if (welcomeChannel) {
+            const welcomeMsg = config.welcomeMessage.replace(
+                /\{member\}/g,
+                member
+            );
+            welcomeChannel
+                .send(welcomeMsg)
+                .catch(err => console.log(err.stack));
+        }
     }
 };

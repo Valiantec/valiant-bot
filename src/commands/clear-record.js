@@ -1,33 +1,29 @@
-const { Permissions } = require('discord.js');
-const {
-    getMemberProfile,
-    writeMemberProfile
-} = require('../managers/data-manager');
+const { PermissionFlagsBits } = require('discord.js');
 const BaseCommand = require('../classes/base-command');
+const repo = require('../data/repository');
 
 class Command extends BaseCommand {
     static metadata = {
         commandName: 'clearrecord',
-        description:
-            "Clears a member's record (notes, warnings, timeouts, and bans)",
-        permissions: [Permissions.FLAGS.MANAGE_MESSAGES]
+        description: "Clears a member's record (notes, warnings, timeouts, and bans)",
+        permissions: PermissionFlagsBits.Administrator
     };
 
     async execute() {
         const args = this.parseArgs(1);
 
-        const memberId = args[0];
+        const memberId = args[0]?.replace(/[<@>]/g, '');
 
-        const memberProfile = await getMemberProfile(
-            this.dMsg.guildId,
-            memberId
-        );
+        const member = await this.dMsg.guild?.members.fetch(memberId);
 
-        delete memberProfile.record;
+        const profile = await repo.getMemberProfile(this.dMsg.guildId, memberId, member != null);
 
-        writeMemberProfile(this.dMsg.guildId, memberProfile);
+        if (profile) {
+            delete profile.record;
+            await repo.updateMemberProfile(this.dMsg.guildId, profile);
+        }
 
-        this.dMsg.channel.send(`<@${memberId}>: Record cleared ✅`);
+        await this.dMsg.channel.send(`✅ Record cleared : <@${memberId}>`);
     }
 }
 

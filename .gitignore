@@ -1,9 +1,4 @@
-secret.json
 /src/firebase/firebase-adminsdk.json
-
-/test
-/data
-/backup
 
 # Logs
 logs

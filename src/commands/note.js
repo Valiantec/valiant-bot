@@ -1,61 +1,35 @@
+const { PermissionFlagsBits } = require('discord.js');
 const BaseCommand = require('../classes/base-command');
 const UserError = require('../classes/errors/user-error');
-const { Permissions } = require('discord.js');
-const {
-    getMemberProfile,
-    writeMemberProfile
-} = require('../managers/data-manager');
-
-const SEPARATOR = ',';
+const moderation = require('../service/moderation');
+const { multiIDStringToList } = require('../util/str-utils');
 
 class Command extends BaseCommand {
     static metadata = {
         commandName: 'note',
         description: "Puts a note on a member's profile",
-        permissions: [Permissions.FLAGS.MANAGE_MESSAGES]
+        permissions: PermissionFlagsBits.ManageMessages
     };
 
     async execute() {
         const args = this.parseArgs(1);
 
-        const memberIds = args[0];
-        const note = args[1];
+        const providedIds = args[0]?.replace(/[<@>]/g, '');
+        const text = args[1];
 
-        if (!note) {
-            throw new UserError(
-                "You can't add an empty note to a member's profile"
-            );
+        if (!text) {
+            throw new UserError("You can't add an empty note");
         }
 
-        memberIds.split(SEPARATOR).forEach(async memberId => {
+        multiIDStringToList(providedIds).forEach(async memberId => {
             try {
-                const memberProfile = await getMemberProfile(
-                    this.dMsg.guildId,
-                    memberId
-                );
-
-                if (!memberProfile.record) {
-                    memberProfile.record = {};
-                }
-
-                if (!memberProfile.record.notes) {
-                    memberProfile.record.notes = [];
-                }
-
-                memberProfile.record.notes.push({
-                    by: this.dMsg.author.tag,
-                    text: note,
-                    date: new Date().toISOString()
-                });
-
-                await writeMemberProfile(this.dMsg.guildId, memberProfile);
+                await moderation.doNote(this.dMsg, memberId, text);
                 this.dMsg.channel
-                    .send(`<@${memberId}>: Notes updated ✅`)
+                    .send(`✅ Notes updated : <@${memberId}>`)
                     .catch(err => console.log(err));
             } catch (err) {
-                console.log(err);
                 this.dMsg.channel
-                    .send(`<@${memberId}>: Failed to update notes ❌`)
+                    .send(`❌ Failed to update notes : <@${memberId}>`)
                     .catch(err => console.log(err));
             }
         });

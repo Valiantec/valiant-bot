@@ -1,0 +1,8 @@
+{
+    "prefix": "!",
+    "reportsChannel": "",
+    "reportsTargetChannel": "",
+    "logsChannel": "",
+    "welcomeChannel": "",
+    "welcomeMessage": "**Hey {member}, welcome to the server!**"
+}
