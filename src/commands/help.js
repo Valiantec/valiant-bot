@@ -47,7 +47,7 @@ class Command extends BaseCommand {
 
 module.exports = Command;
 
-fs.readdirSync('./src/commands/')
+fs.readdirSync(__dirname)
     .filter(fileName => fileName.endsWith('.js'))
     .forEach(fileName => {
         try {
