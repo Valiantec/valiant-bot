@@ -6,9 +6,10 @@ let trackingIntervalId;
 
 async function distributePoints() {
     for (const [guildId, memberSet] of membersActiveInLastMinute) {
-        for (const memberId of [...memberSet]) {
-            repo.getMemberProfile(guildId, memberId).then(profile => {
+        for (const member of [...memberSet]) {
+            repo.getMemberProfile(guildId, member.id).then(profile => {
                 profile.points++;
+                profile.tag = member.tag || profile.tag;
                 repo.updateMemberProfile(guildId, profile);
             });
         }
@@ -17,7 +18,7 @@ async function distributePoints() {
 }
 
 module.exports = {
-    notifyActivity: (memberId, guildId) => {
+    notifyActivity: (member, guildId) => {
         let memberSet = membersActiveInLastMinute.get(guildId);
 
         if (!memberSet) {
@@ -25,7 +26,7 @@ module.exports = {
             membersActiveInLastMinute.set(guildId, memberSet);
         }
 
-        memberSet.add(memberId);
+        memberSet.add(member);
     },
     startTracking: () => {
         trackingIntervalId = setInterval(() => {

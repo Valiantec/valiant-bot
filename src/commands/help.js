@@ -1,5 +1,6 @@
 const fs = require('fs');
 const BaseCommand = require('../classes/base-command');
+const { getGuildConfig } = require('../data/repository');
 const {
     singleCommandHelpEmbed,
     helpCommandEmbed
@@ -24,11 +25,12 @@ class Command extends BaseCommand {
         let embed;
 
         if (commandName) {
+            const config = await getGuildConfig(this.dMsg.guildId);
             const metadata = commandsMetadata.get(commandName);
             if (!canExecute(this.dMsg.member, metadata.permissions)) {
                 return;
             }
-            embed = singleCommandHelpEmbed(metadata);
+            embed = singleCommandHelpEmbed(metadata, config.prefix);
         } else {
             const authorizedCommandsMetaData = [];
             commandsMetadata.forEach(v => {

@@ -1,6 +1,7 @@
-const { GuildMember, PermissionFlagsBits } = require('discord.js');
+const { PermissionFlagsBits } = require('discord.js');
 const BaseCommand = require('../classes/base-command');
-const { forwardMessage } = require('../service/messaging');
+const { tryForwardMessage } = require('../service/messaging');
+const { tryFetchMember } = require('../util/discord-utils');
 
 const SEPARATOR = ',';
 
@@ -9,6 +10,8 @@ class Command extends BaseCommand {
         commandName: 'dm',
         aliases: ['msg'],
         description: 'Sends a message to a member',
+        syntax: '{prefix}dm <memberIDs> <text>',
+        examples: ['{prefix}dm 123123123 Test Message', '{prefix}dm 123123123,456456456 Test Message'],
         permissions: PermissionFlagsBits.ManageMessages
     };
 
@@ -19,14 +22,12 @@ class Command extends BaseCommand {
         const text = `You received a message from **${this.dMsg.guild?.name}**:\n${args[1]}`;
 
         memberIds.split(SEPARATOR).forEach(async memberId => {
-            try {
-                const member = await this.dMsg.guild?.members.fetch(memberId);
-                await forwardMessage(text, member, this.dMsg);
-                this.dMsg.channel.send(`✅ DM sent to <@${memberId}>`).catch(err => console.log(err));
-            } catch (err) {
-                console.log(err);
-                this.dMsg.channel.send(`❌ Failed to DM <@${memberId}>`).catch(err => console.log(err));
-            }
+            tryFetchMember(this.dMsg.guild, memberId).then(member => {
+                if (!member) return;
+                tryForwardMessage(text, member, this.dMsg).then(() => {
+                    this.dMsg.channel.send(`✅ DM sent to <@${memberId}>`).catch(err => console.log(err));
+                });
+            });
         });
     }
 }

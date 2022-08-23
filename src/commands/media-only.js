@@ -23,9 +23,7 @@ class Command extends BaseCommand {
 
         let state;
         if (config.mediaOnlyChannels.includes(channelId)) {
-            config.mediaOnlyChannels = config.mediaOnlyChannels.filter(
-                id => id != channelId
-            );
+            config.mediaOnlyChannels = config.mediaOnlyChannels.filter(id => id != channelId);
             state = 'OFF';
         } else {
             config.mediaOnlyChannels.push(channelId);
@@ -35,11 +33,7 @@ class Command extends BaseCommand {
         await updateGuildConfig(this.dMsg.guildId, config);
 
         this.dMsg.channel.send({
-            embeds: [
-                embedShop.oneLineEmbed(
-                    `<#${channelId}> media-only: \`${state}\``
-                )
-            ]
+            embeds: [embedShop.oneLineEmbed(`<#${channelId}> media-only: \`${state}\``)]
         });
     }
 }

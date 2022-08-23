@@ -12,7 +12,7 @@ module.exports = {
         ecmaVersion: 2021
     },
     rules: {
-        'no-unused-vars': 'warn',
+        'no-unused-vars': 'off',
         'prefer-const': 'warn'
     },
     plugins: ['@babel']

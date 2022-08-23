@@ -9,6 +9,6 @@ module.exports = {
      */
     execute: async guild => {
         console.log(`+ Joined Guild: ${guild.name}`);
-        await repo.createGuildProfile(guild.id).catch(err => console.log(err));
+        await repo.createGuildProfile(guild.id);
     }
 };

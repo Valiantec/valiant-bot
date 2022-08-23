@@ -6,7 +6,12 @@ const repo = require('../data/repository');
 class Command extends BaseCommand {
     static metadata = {
         commandName: 'config',
-        description: '',
+        description: 'Shows the server config or sets the value of a config item',
+        syntax: '{prefix}config <key> <new-value>',
+        examples: [
+            '{prefix}config',
+            '{prefix}config prefix $'
+        ],
         permissions: PermissionFlagsBits.Administrator
     };
 

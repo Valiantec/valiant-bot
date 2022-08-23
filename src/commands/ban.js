@@ -8,6 +8,11 @@ class Command extends BaseCommand {
     static metadata = {
         commandName: 'ban',
         description: 'Bans a member and adds it to their profile',
+        syntax: '{prefix}ban <memberIDs> <reason>',
+        examples: [
+            '{prefix}ban 123123123 Trolling in vc',
+            '{prefix}ban 123123123,456456456 Minor'
+        ],
         permissions: PermissionFlagsBits.ManageMessages
     };
 

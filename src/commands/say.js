@@ -1,6 +1,7 @@
 const { PermissionFlagsBits } = require('discord.js');
 const BaseCommand = require('../classes/base-command');
 const { tryForwardMessage } = require('../service/messaging');
+const { tryFetchChannel } = require('../util/discord-utils');
 
 class Command extends BaseCommand {
     static metadata = {
@@ -15,11 +16,13 @@ class Command extends BaseCommand {
         const channelId = args[0]?.replace(/[<#>]/g, '');
         const text = args[1];
 
-        const channel = await this.dMsg.guild.channels.fetch(channelId);
+        const channel = await tryFetchChannel(this.dMsg.guild, channelId);
 
-        tryForwardMessage(text, channel, this.dMsg).then(() =>
-            this.dMsg.channel.send(`✅ Message sent in <#${channelId}>`).catch(() => {})
-        );
+        if (channel) {
+            tryForwardMessage(text, channel, this.dMsg).then(() =>
+                this.dMsg.channel.send(`✅ Message sent in <#${channelId}>`).catch(() => {})
+            );
+        }
     }
 }
 

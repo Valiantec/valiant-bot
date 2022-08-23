@@ -2,6 +2,7 @@ const { PermissionFlagsBits, EmbedBuilder, time, codeBlock } = require('discord.
 const BaseCommand = require('../classes/base-command');
 const UserError = require('../classes/errors/user-error');
 const repo = require('../data/repository');
+const { tryFetchMember, tryFetchUser } = require('../util/discord-utils');
 
 class Command extends BaseCommand {
     static metadata = {
@@ -16,7 +17,7 @@ class Command extends BaseCommand {
 
         const memberId = args[0]?.replace(/[<@>]/g, '') || this.dMsg.member.id;
 
-        const member = await this.dMsg.guild.members.fetch(memberId).catch(() => {});
+        const member = await tryFetchMember(this.dMsg.guild, memberId);
 
         const profile = await repo.getMemberProfile(this.dMsg.guildId, memberId, member != null);
 
@@ -24,7 +25,9 @@ class Command extends BaseCommand {
             throw new UserError('Not found');
         }
 
-        const embed = new EmbedBuilder().setDescription(`**ID:** ${profile.id}\n**Points:** ${profile.points}`);
+        const embed = new EmbedBuilder()
+            .setDescription(`**Points:** ${profile.points}`)
+            .setFooter({ text: `ID: ${profile.id}` });
 
         if (profile.tag) {
             embed.setAuthor({ name: profile.tag });
@@ -37,7 +40,7 @@ class Command extends BaseCommand {
                     `\n**Created:** ${time(member.user.createdAt)}\n**Joined:** ${time(member.joinedAt)}`
             );
         } else {
-            const user = await this.dMsg.client.users.fetch(memberId).catch(() => {});
+            const user = await tryFetchUser(this.dMsg.client, memberId);
             if (user) {
                 embed.setAuthor({ name: user.tag, iconURL: user.displayAvatarURL() });
                 embed.setDescription(embed.data.description + `\n**Created:** ${time(user.createdAt)}`);

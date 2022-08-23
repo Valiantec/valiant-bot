@@ -29,9 +29,10 @@ client.commands = new Collection();
 console.log('Loading commands');
 fs.readdirSync(path.join(__dirname, 'commands'))
     .filter(fileName => fileName.endsWith('.js'))
-    .forEach(fileName => {
+    .map(fileName => require(`./commands/${fileName}`))
+    .sort((c1, c2) => c1.metadata.permissions?.toString().localeCompare(c2.metadata.permissions?.toString()))
+    .forEach(Command => {
         try {
-            const Command = require(`./commands/${fileName}`);
             client.commands.set(Command.metadata.commandName.toLowerCase(), Command);
             Command.metadata.aliases?.forEach(alias => client.commands.set(alias, Command));
             console.log(
@@ -41,27 +42,27 @@ fs.readdirSync(path.join(__dirname, 'commands'))
                         : Command.metadata.permissions == PermissionFlagsBits.ManageMessages
                         ? 'MOD'
                         : 'ALL'
-                }] ${fileName}`
+                }] ${Command.metadata.commandName}`
             );
         } catch (err) {
-            console.log(`❌ command: ${fileName} [Failed to load]\n${err}`);
+            console.log(`❌ command: ${Command.metadata.commandName} [Failed to load]\n${err}`);
         }
     });
 
 console.log('Loading events');
 fs.readdirSync(path.join(__dirname, 'events'))
     .filter(fileName => fileName.endsWith('.js'))
-    .forEach(fileName => {
+    .map(fileName => require(`./events/${fileName}`))
+    .forEach(handler => {
         try {
-            const handler = require(`./events/${fileName}`);
             if (handler.execOnce) {
                 client.once(handler.eventName, handler.execute);
             } else {
                 client.on(handler.eventName, handler.execute);
             }
-            console.log(`🟢 event: ${fileName}`);
+            console.log(`🟢 event: ${handler.eventName}`);
         } catch (err) {
-            console.log(`🔴 event: ${fileName} [Failed to load]\n${err}`);
+            console.log(`🔴 event: ${handler.eventName} [Failed to load]\n${err}`);
         }
     });
 

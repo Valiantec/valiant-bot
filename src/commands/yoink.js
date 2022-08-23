@@ -34,7 +34,7 @@ class Command extends BaseCommand {
             this.dMsg.channel.send(url);
         } else {
             this.dMsg.channel.send({
-                embeds: [embedShop.oneLineEmbed('The provided message does not contain an emoji', 'danger')]
+                embeds: [embedShop.oneLineEmbed('The provided message does not contain an emoji', 'error')]
             });
         }
     }

@@ -9,13 +9,9 @@ class Command extends BaseCommand {
     };
 
     async execute() {
-        const prefix = (await repo.getGuildConfig(this.dMsg.guild.id)).prefix;
+        const prefix = (await repo.getGuildConfig(this.dMsg.guildId)).prefix;
 
-        const embed = oneLineEmbed(
-            `The prefix for this server is: \`${prefix}\``
-        );
-
-        await this.dMsg.channel.send({ embeds: [embed] });
+        await this.dMsg.channel.send({ embeds: [oneLineEmbed(`The prefix for this server is: \`${prefix}\``)] });
     }
 }
 

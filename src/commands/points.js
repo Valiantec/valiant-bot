@@ -17,11 +17,7 @@ class Command extends BaseCommand {
         const profile = await repo.getMemberProfile(this.dMsg.guildId, memberId);
         if (profile) {
             this.dMsg.channel.send({
-                embeds: [
-                    embedShop.oneLineEmbed(
-                        `<@${memberId}> has \`${profile.points}\` points`
-                    )
-                ]
+                embeds: [embedShop.oneLineEmbed(`<@${memberId}> has \`${profile.points}\` points`)]
             });
         } else {
             throw new UserError('Member not found');

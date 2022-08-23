@@ -1,11 +1,14 @@
 const { PermissionFlagsBits } = require('discord.js');
 const BaseCommand = require('../classes/base-command');
 const repo = require('../data/repository');
+const { tryFetchMember } = require('../util/discord-utils');
 
 class Command extends BaseCommand {
     static metadata = {
         commandName: 'clearrecord',
         description: "Clears a member's record (notes, warnings, timeouts, and bans)",
+        syntax: '{prefix}clearrecord <memberID>',
+        examples: ['{prefix}clearrecord 123123123'],
         permissions: PermissionFlagsBits.Administrator
     };
 
@@ -14,7 +17,7 @@ class Command extends BaseCommand {
 
         const memberId = args[0]?.replace(/[<@>]/g, '');
 
-        const member = await this.dMsg.guild?.members.fetch(memberId);
+        const member = await tryFetchMember(this.dMsg.guild, memberId);
 
         const profile = await repo.getMemberProfile(this.dMsg.guildId, memberId, member != null);
 

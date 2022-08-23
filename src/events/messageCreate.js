@@ -32,7 +32,7 @@ module.exports = {
         }
 
         // Notify member message
-        activityTracker.notifyActivity(msg.member.id, msg.guildId);
+        activityTracker.notifyActivity({id: msg.member.id, tag: msg.author.tag}, msg.guildId);
 
         let deleteMessage = false;
 
@@ -81,7 +81,7 @@ module.exports = {
                 await command.execute().catch(err => {
                     if (err instanceof UserError) {
                         msg.channel.send({
-                            embeds: [embedShop.oneLineEmbed(err.message || 'Something went wrong', 'danger')]
+                            embeds: [embedShop.oneLineEmbed(err.message || 'Something went wrong', 'error')]
                         });
                     } else {
                         console.log(err.stack);
