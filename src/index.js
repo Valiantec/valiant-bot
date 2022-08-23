@@ -66,4 +66,4 @@ fs.readdirSync(path.join(__dirname, 'events'))
         }
     });
 
-client.login(process.env.BOT_TOKEN).then(() => console.log(`Logged in`));
+client.login(process.env.BOT_TOKEN).then(() => console.log(`Client logged in`));
