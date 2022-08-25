@@ -74,7 +74,7 @@ module.exports = {
             );
 
             const args = msg.content.substring(config.prefix.length).trim().substring(commandName.length).trimStart();
-console.log(args);
+
             const command = new Command(msg, args);
 
             await command.execute().catch(err => {
