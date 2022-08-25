@@ -61,7 +61,7 @@ module.exports = {
 
         // Handle commands
         if (msg.content.startsWith(config.prefix)) {
-            const commandName = msg.content.substring(config.prefix.length).trim().split(' ')[0].toLowerCase();
+            const commandName = msg.content.substring(config.prefix.length).trim().split(/\s/)[0].toLowerCase();
 
             const Command = msg.client.commands.get(commandName);
 
@@ -74,7 +74,7 @@ module.exports = {
             );
 
             const args = msg.content.substring(config.prefix.length).trim().substring(commandName.length).trimStart();
-
+console.log(args);
             const command = new Command(msg, args);
 
             await command.execute().catch(err => {

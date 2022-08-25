@@ -14,18 +14,23 @@ class Command extends BaseCommand {
         const args = this.parseArgs(1);
 
         const memberId = args[0];
-
-        const member = memberId ? await tryFetchMember(this.dMsg.guildId, memberId) : this.dMsg.member;
+        
+        const member = memberId ? await tryFetchMember(this.dMsg.guild, memberId) : this.dMsg.member;
 
         if (!member) {
             throw new MemberNotFoundError();
         }
 
-        await this.dMsg.channel.send(
-            oneLineEmbed(
-                `${member} joined the server on \`${member.joinedAt.toISOString().split('.')[0].replace('T', '  ')}\``
-            )
-        );
+        await this.dMsg.channel.send({
+            embeds: [
+                oneLineEmbed(
+                    `${member} joined the server on \`${member.joinedAt
+                        .toISOString()
+                        .split('.')[0]
+                        .replace('T', '  ')}\``
+                )
+            ]
+        });
     }
 }
 

@@ -37,12 +37,12 @@ class Command extends BaseCommand {
     try {
         ${code}
     } catch(err) {
-        output += err.stack;
+        output += err.message;
     }
 
 }`);
             const result = func();
-            this.dMsg.channel.send(`${codeBlock(output)}${result ? '**Returned:**\n' + codeBlock(result) : ''}`);
+            await this.dMsg.channel.send(`${output ? '**Output:**' + codeBlock(output) : ''}${result ? '**Returned:**\n' + codeBlock(result) : ''}`);
         } catch (err) {
             throw new UserError(err.message);
         }
