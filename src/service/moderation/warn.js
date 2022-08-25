@@ -1,8 +1,9 @@
-const repo = require('../../data/repository');
+const memberRepo = require('../../data/repository/member-repo');
 const { Message } = require('discord.js');
-const { isMod } = require('../../util/discord-utils');
+const { isMod, tryFetchMember } = require('../../util/discord-utils');
 const { logModerationAction } = require('../messaging');
 const UserError = require('../../classes/errors/user-error');
+const MemberNotFoundError = require('../../classes/errors/member-not-found-error');
 
 /**
  *
@@ -11,9 +12,11 @@ const UserError = require('../../classes/errors/user-error');
  * @param {string} text
  */
 async function doWarn(dMsg, userId, text) {
-    const member = await dMsg.guild.members.fetch(userId);
+    const member = await tryFetchMember(dMsg.guild, userId);
 
-    if (isMod(member)) {
+    if (!member) {
+        throw new MemberNotFoundError();
+    } else if (isMod(member)) {
         throw new UserError('Member is mod');
     }
 
@@ -21,7 +24,7 @@ async function doWarn(dMsg, userId, text) {
         `You received a warning from **${dMsg.guild.name}**:\n${text}`
     );
 
-    const profile = await repo.getMemberProfile(dMsg.guildId, userId);
+    const profile = await memberRepo.getById(dMsg.guildId, userId);
 
     profile.tag = member.user.tag;
 
@@ -39,7 +42,7 @@ async function doWarn(dMsg, userId, text) {
         date: new Date().toISOString()
     });
 
-    await repo.updateMemberProfile(dMsg.guildId, profile);
+    await memberRepo.update(dMsg.guildId, profile);
 
     await logModerationAction(
         dMsg,

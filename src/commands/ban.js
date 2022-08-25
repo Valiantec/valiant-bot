@@ -7,7 +7,7 @@ const { multiIDStringToList } = require('../util/str-utils');
 class Command extends BaseCommand {
     static metadata = {
         commandName: 'ban',
-        description: 'Bans a member and adds it to their profile',
+        description: 'Bans a member, preventing them from rejoining the server',
         syntax: '{prefix}ban <memberIDs> <reason>',
         examples: [
             '{prefix}ban 123123123 Trolling in vc',

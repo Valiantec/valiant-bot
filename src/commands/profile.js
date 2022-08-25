@@ -1,7 +1,7 @@
 const { PermissionFlagsBits, EmbedBuilder, time, codeBlock } = require('discord.js');
 const BaseCommand = require('../classes/base-command');
 const UserError = require('../classes/errors/user-error');
-const repo = require('../data/repository');
+const memberRepo = require('../data/repository/member-repo');
 const { tryFetchMember, tryFetchUser } = require('../util/discord-utils');
 
 class Command extends BaseCommand {
@@ -19,7 +19,7 @@ class Command extends BaseCommand {
 
         const member = await tryFetchMember(this.dMsg.guild, memberId);
 
-        const profile = await repo.getMemberProfile(this.dMsg.guildId, memberId, member != null);
+        const profile = await memberRepo.getById(this.dMsg.guildId, memberId, member != null);
 
         if (!profile) {
             throw new UserError('Not found');
@@ -27,7 +27,8 @@ class Command extends BaseCommand {
 
         const embed = new EmbedBuilder()
             .setDescription(`**Points:** ${profile.points}`)
-            .setFooter({ text: `ID: ${profile.id}` });
+            .setFooter({ text: `ID: ${profile.id}` })
+            .setColor(member.displayColor);
 
         if (profile.tag) {
             embed.setAuthor({ name: profile.tag });

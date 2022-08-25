@@ -1,20 +1,16 @@
+const { EmbedBuilder } = require('discord.js');
 const fs = require('fs');
 const BaseCommand = require('../classes/base-command');
-const { getGuildConfig } = require('../data/repository');
-const {
-    singleCommandHelpEmbed,
-    helpCommandEmbed
-} = require('../util/embed-shop');
+const guildRepo = require('../data/repository/guild-repo');
 const { canExecute } = require('../util/utils');
 
-const commandsMetadata = new Map();
+const commandsMap = new Map();
 
 class Command extends BaseCommand {
     static metadata = {
         commandName: 'help',
         aliases: ['h'],
-        description:
-            'Shows commands available to the person who initiated the command'
+        description: 'Shows commands available to the person who initiated the command'
     };
 
     async execute() {
@@ -25,20 +21,55 @@ class Command extends BaseCommand {
         let embed;
 
         if (commandName) {
-            const config = await getGuildConfig(this.dMsg.guildId);
-            const metadata = commandsMetadata.get(commandName);
-            if (!canExecute(this.dMsg.member, metadata.permissions)) {
+            const config = await guildRepo.getConfig(this.dMsg.guildId);
+
+            let command = commandsMap.get(commandName);
+
+            if (!command) {
+                for (const c of commandsMap.values()) {
+                    if (c.metadata.aliases?.includes(commandName)) {
+                        command = c;
+                        break;
+                    }
+                }
+            }
+
+            if (!command || !canExecute(this.dMsg.member, command)) {
                 return;
             }
-            embed = singleCommandHelpEmbed(metadata, config.prefix);
+
+            embed = new EmbedBuilder()
+                .setTitle(command.metadata.commandName)
+                .setColor(this.dMsg.guild.members.me.displayColor);
+
+            if (command.metadata.description) {
+                embed.setDescription(command.metadata.description);
+            }
+
+            if (command.metadata.aliases?.length > 0) {
+                embed.addFields([{ name: 'Aliases:', value: command.metadata.aliases.join(', ') }]);
+            }
+
+            if (command.metadata.syntax) {
+                embed.addFields([
+                    { name: 'Syntax:', value: `\`${command.metadata.syntax.replace(/\{prefix\}/g, config.prefix)}\`` }
+                ]);
+            }
+
+            if (command.metadata.examples?.length > 0) {
+                embed.addFields([
+                    {
+                        name: 'Examples:',
+                        value: command.metadata.examples.join('\n').replace(/\{prefix\}/g, config.prefix)
+                    }
+                ]);
+            }
         } else {
-            const authorizedCommandsMetaData = [];
-            commandsMetadata.forEach(v => {
-                if (canExecute(this.dMsg.member, v.permissions)) {
-                    authorizedCommandsMetaData.push(v);
-                }
-            });
-            embed = helpCommandEmbed(authorizedCommandsMetaData);
+            embed = new EmbedBuilder().setTitle('Commands:').setColor(this.dMsg.guild.members.me.displayColor);
+            const fields = [...commandsMap.values()]
+                .filter(c => canExecute(this.dMsg.member, c))
+                .map(c => ({ name: c.metadata.commandName, value: c.metadata.description || '-' }));
+            embed.addFields(fields);
         }
 
         this.dMsg.channel.send({ embeds: [embed] });
@@ -48,15 +79,10 @@ class Command extends BaseCommand {
 module.exports = Command;
 
 fs.readdirSync(__dirname)
-    .filter(fileName => fileName.endsWith('.js'))
-    .forEach(fileName => {
-        try {
-            const commandClass = require(`./${fileName}`);
-            commandsMetadata.set(
-                commandClass.metadata.commandName,
-                commandClass.metadata
-            );
-        } catch (err) {
-            console.log(`❌ help.js: [Error constructing help for ${fileName}]`);
-        }
+    .filter(fileName => fileName.endsWith('.js') && !__filename.endsWith(fileName))
+    .map(fileName => require(`./${fileName}`))
+    .forEach(commandClass => {
+        commandsMap.set(commandClass.metadata.commandName, commandClass);
     });
+
+commandsMap.set(Command.metadata.commandName, Command);

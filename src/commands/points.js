@@ -1,7 +1,7 @@
 const BaseCommand = require('../classes/base-command');
 const embedShop = require('../util/embed-shop');
 const UserError = require('../classes/errors/user-error');
-const repo = require('../data/repository');
+const memberRepo = require('../data/repository/member-repo');
 
 class Command extends BaseCommand {
     static metadata = {
@@ -14,7 +14,7 @@ class Command extends BaseCommand {
 
         const memberId = args[0]?.replace(/[<@>]/g, '') || this.dMsg.member.id;
 
-        const profile = await repo.getMemberProfile(this.dMsg.guildId, memberId);
+        const profile = await memberRepo.getById(this.dMsg.guildId, memberId);
         if (profile) {
             this.dMsg.channel.send({
                 embeds: [embedShop.oneLineEmbed(`<@${memberId}> has \`${profile.points}\` points`)]

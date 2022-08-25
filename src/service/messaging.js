@@ -1,5 +1,5 @@
 const { Message, TextChannel, GuildMember } = require('discord.js');
-const repo = require('../data/repository');
+const guildRepo = require('../data/repository/guild-repo');
 
 /**
  *
@@ -31,7 +31,7 @@ async function tryForwardMessage(text, target, sourceMsg = null) {
  * @param {string} text
  */
 async function logModerationAction(dMsg, text) {
-    const config = await repo.getGuildConfig(dMsg.guildId);
+    const config = await guildRepo.getConfig(dMsg.guildId);
     if (config.logsChannel) {
         const logsChannel = await dMsg.guild?.channels.fetch(config.logsChannel);
         await logsChannel.send(text);

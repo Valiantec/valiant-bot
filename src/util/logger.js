@@ -29,3 +29,39 @@ module.exports = {
         console.error = error;
     }
 };
+
+
+// const fs = require('fs');
+
+// const LOGS_PATH = './logs';
+// const COMMAND_LOGS_PATH = `${LOGS_PATH}/commands`;
+
+// const runDate = new Date();
+// const logFile = fs.createWriteStream(
+//     `${LOGS_PATH}/${runDate.getFullYear()}-${
+//         runDate.getMonth() + 1
+//     }-${runDate.getDate()} ${runDate.getHours()}-${runDate.getMinutes()}-${runDate.getSeconds()}.txt`
+// );
+
+// try {
+//     fs.mkdirSync(LOGS_PATH);
+//     fs.mkdirSync(COMMAND_LOGS_PATH);
+// } catch (err) {}
+
+// module.exports = {
+//     log: (text) => {
+//         const logMessage = `[${new Date().toLocaleString()}]  ${text}`;
+//         console.log(logMessage);
+//         logFile.write(logMessage + '\n');
+//     },
+
+//     logCommand: (command) => {
+//         try {
+//             fs.mkdirSync(`${COMMAND_LOGS_PATH}/${command.meta.commandName}`);
+//         } catch (err) {}
+//         fs.writeFileSync(
+//             `${COMMAND_LOGS_PATH}/${command.meta.commandName}/${new Date().toISOString().replace(/:/g, '-')}.json`,
+//             JSON.stringify(command, null, 4)
+//         );
+//     }
+// };

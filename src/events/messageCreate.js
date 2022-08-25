@@ -1,7 +1,7 @@
 const { Message, Events } = require('discord.js');
 const UserError = require('../classes/errors/user-error');
 const activityTracker = require('../service/activity-tracker');
-const repo = require('../data/repository');
+const guildRepo = require('../data/repository/guild-repo');
 const { forwardMessage } = require('../service/messaging');
 const { isMod, isAdmin } = require('../util/discord-utils');
 const embedShop = require('../util/embed-shop');
@@ -32,11 +32,11 @@ module.exports = {
         }
 
         // Notify member message
-        activityTracker.notifyActivity({id: msg.member.id, tag: msg.author.tag}, msg.guildId);
+        activityTracker.notifyActivity({ id: msg.member.id, tag: msg.author.tag }, msg.guildId);
 
         let deleteMessage = false;
 
-        const config = await repo.getGuildConfig(msg.guildId);
+        const config = await guildRepo.getConfig(msg.guildId);
 
         // Handle Report Channels
         if (msg.channelId == config.reportsChannel) {
@@ -65,29 +65,27 @@ module.exports = {
 
             const Command = msg.client.commands.get(commandName);
 
-            if (!Command) {
+            if (!Command || !canExecute(msg.member, Command)) {
                 return;
             }
 
-            if (canExecute(msg.member, Command.metadata.permissions)) {
-                const args = msg.content
-                    .substring(config.prefix.length)
-                    .trim()
-                    .substring(commandName.length)
-                    .trimStart();
+            console.log(
+                `[${Command.metadata.commandName}] used by ${msg.author.tag} (${msg.author.id}) in ${msg.guild.name} (${msg.guild.id})`
+            );
 
-                const command = new Command(msg, args);
+            const args = msg.content.substring(config.prefix.length).trim().substring(commandName.length).trimStart();
 
-                await command.execute().catch(err => {
-                    if (err instanceof UserError) {
-                        msg.channel.send({
-                            embeds: [embedShop.oneLineEmbed(err.message || 'Something went wrong', 'error')]
-                        });
-                    } else {
-                        console.log(err.stack);
-                    }
-                });
-            }
+            const command = new Command(msg, args);
+
+            await command.execute().catch(err => {
+                if (err instanceof UserError) {
+                    msg.channel.send({
+                        embeds: [embedShop.oneLineEmbed(err.message || 'Something went wrong', 'error')]
+                    });
+                } else {
+                    console.log(err.stack);
+                }
+            });
         }
 
         // Delete message if needed

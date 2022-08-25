@@ -6,9 +6,13 @@ module.exports = {
      * @param {GuildMember} member
      * @param {string[]} commandPermissions
      */
-    canExecute: (member, commandPermissions) => {
-        if (commandPermissions) {
-            return member.permissions.has(commandPermissions, true);
+    canExecute: (member, command) => {
+        if (command.metadata.botOwnerOnly) {
+            return member.id === member.client.application.owner.id;
+        }
+
+        if (command.metadata.permissions) {
+            return member.permissions.has(command.metadata.permissions, true);
         }
 
         return true;
@@ -28,5 +32,9 @@ module.exports = {
 
             [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
         }
+    },
+
+    treeCharacters: (current, length) => {
+        return current < length - 1 ? '├─' : '└─';
     }
 };

@@ -1,6 +1,6 @@
 const BaseCommand = require('../classes/base-command');
 const { oneLineEmbed } = require('../util/embed-shop');
-const repo = require('../data/repository');
+const guildRepo = require('../data/repository/guild-repo');
 
 class Command extends BaseCommand {
     static metadata = {
@@ -9,7 +9,7 @@ class Command extends BaseCommand {
     };
 
     async execute() {
-        const prefix = (await repo.getGuildConfig(this.dMsg.guildId)).prefix;
+        const prefix = (await guildRepo.getConfig(this.dMsg.guildId)).prefix;
 
         await this.dMsg.channel.send({ embeds: [oneLineEmbed(`The prefix for this server is: \`${prefix}\``)] });
     }

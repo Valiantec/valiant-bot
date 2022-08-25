@@ -1,5 +1,5 @@
 const { Client, Events } = require('discord.js');
-const { getGuildProfile } = require('../data/repository');
+const guildRepo = require('../data/repository/guild-repo');
 const activityTracker = require('../service/activity-tracker');
 
 module.exports = {
@@ -14,7 +14,7 @@ module.exports = {
         const guilds = await client.guilds.fetch();
 
         guilds.forEach(async guild => {
-            await getGuildProfile(guild.id);
+            await guildRepo.getById(guild.id);
         });
 
         const guildNames = guilds.map(g => g.name);

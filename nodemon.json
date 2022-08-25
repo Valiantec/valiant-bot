@@ -1,6 +1,6 @@
 {
     "watch": ["src"],
-    "ext": ".js",
+    "ext": ".js, .json",
     "ignore": [],
     "exec": "npm run lint && node ./src/index.js"
-  }
+}

@@ -1,6 +1,6 @@
 const { PermissionFlagsBits } = require('discord.js');
 const BaseCommand = require('../classes/base-command');
-const repo = require('../data/repository');
+const memberRepo = require('../data/repository/member-repo');
 const { tryFetchMember } = require('../util/discord-utils');
 
 class Command extends BaseCommand {
@@ -19,11 +19,11 @@ class Command extends BaseCommand {
 
         const member = await tryFetchMember(this.dMsg.guild, memberId);
 
-        const profile = await repo.getMemberProfile(this.dMsg.guildId, memberId, member != null);
+        const profile = await memberRepo.getById(this.dMsg.guildId, memberId, member != null);
 
         if (profile) {
             delete profile.record;
-            await repo.updateMemberProfile(this.dMsg.guildId, profile);
+            await memberRepo.update(this.dMsg.guildId, profile);
         }
 
         await this.dMsg.channel.send(`✅ Record cleared : <@${memberId}>`);

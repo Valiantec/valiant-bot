@@ -1,5 +1,6 @@
 const { GuildMember, Events } = require('discord.js');
-const repo = require('../data/repository');
+const guildRepo = require('../data/repository/guild-repo');
+const memberRepo = require('../data/repository/member-repo');
 
 module.exports = {
     eventName: Events.GuildMemberAdd,
@@ -11,9 +12,9 @@ module.exports = {
             return;
         }
 
-        repo.createMemberProfile(member.guild.id, member.id).catch(() => {});
+        memberRepo.create(member.guild.id, member.id).catch(() => {});
 
-        const config = await repo.getGuildConfig(member.guild.id);
+        const config = await guildRepo.getConfig(member.guild.id);
 
         const welcomeChannel = await member.guild.channels.fetch(
             config.welcomeChannel

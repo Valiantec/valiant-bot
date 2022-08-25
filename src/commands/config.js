@@ -1,7 +1,7 @@
 const BaseCommand = require('../classes/base-command');
 const { PermissionFlagsBits, codeBlock } = require('discord.js');
 const embedShop = require('../util/embed-shop');
-const repo = require('../data/repository');
+const guildRepo = require('../data/repository/guild-repo');
 
 class Command extends BaseCommand {
     static metadata = {
@@ -21,13 +21,13 @@ class Command extends BaseCommand {
         const key = args[0];
         const value = args[1];
 
-        const config = await repo.getGuildConfig(this.dMsg.guildId);
+        const config = await guildRepo.getConfig(this.dMsg.guildId);
 
         let msg = null;
 
         if (Object.keys(config).includes(key) && value) {
             config[key] = value;
-            await repo.updateGuildConfig(this.dMsg.guildId, config);
+            await guildRepo.updateConfig(this.dMsg.guildId, config);
             msg = {
                 embeds: [embedShop.oneLineEmbed(`Changed value of [\`${key}\`] to (\`${value}\`)`)]
             };

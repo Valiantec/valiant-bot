@@ -1,4 +1,4 @@
-const repo = require('../../data/repository');
+const memberRepo = require('../../data/repository/member-repo');
 const { Message } = require('discord.js');
 const { isMod } = require('../../util/discord-utils');
 const { logModerationAction } = require('../messaging');
@@ -25,7 +25,7 @@ async function doTimeout(dMsg, userId, duration, text) {
         `**${member} | ${userId}** has been timed out for **${duration} minutes** by **${dMsg.author.tag}**: ${text}`
     );
 
-    const profile = await repo.getMemberProfile(dMsg.guildId, userId);
+    const profile = await memberRepo.getById(dMsg.guildId, userId);
 
     profile.tag = member.user.tag;
 
@@ -44,7 +44,7 @@ async function doTimeout(dMsg, userId, duration, text) {
         date: new Date().toISOString()
     });
 
-    await repo.updateMemberProfile(dMsg.guildId, profile);
+    await memberRepo.update(dMsg.guildId, profile);
 
     await member.send(
         `You received a timeout in **${dMsg.guild.name}**:\n${text}`

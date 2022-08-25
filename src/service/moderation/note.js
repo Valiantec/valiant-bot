@@ -1,4 +1,4 @@
-const repo = require('../../data/repository');
+const memberRepo = require('../../data/repository/member-repo');
 const { Message } = require('discord.js');
 
 /**
@@ -10,7 +10,7 @@ const { Message } = require('discord.js');
 async function doNote(dMsg, userId, text) {
     const user = await dMsg.client.users.fetch(userId);
 
-    const profile = await repo.getMemberProfile(dMsg.guildId, userId);
+    const profile = await memberRepo.getById(dMsg.guildId, userId);
 
     profile.tag = user.tag;
 
@@ -28,7 +28,7 @@ async function doNote(dMsg, userId, text) {
         date: new Date().toISOString()
     });
 
-    await repo.updateMemberProfile(dMsg.guildId, profile);
+    await memberRepo.update(dMsg.guildId, profile);
 }
 
 module.exports = {

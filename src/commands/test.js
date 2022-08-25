@@ -6,11 +6,12 @@ class Command extends BaseCommand {
     };
 
     async execute() {
-        this.dMsg.react('🔁');
-        setTimeout(() => {
-            this.dMsg.reactions.removeAll();
-            this.dMsg.react('✅');
-        }, 1000);
+        this.dMsg.react('🔁').then(() =>
+            setTimeout(async () => {
+                await this.dMsg.reactions.removeAll();
+                this.dMsg.react('✅');
+            }, 1000)
+        );
     }
 }
 

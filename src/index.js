@@ -1,16 +1,16 @@
 require('dotenv').config();
 require('./util/logger').integrate();
 
-const path = require('path');
-const fs = require('fs');
-
-const { Client, GatewayIntentBits, Partials, Collection, PermissionFlagsBits } = require('discord.js');
+const { Client, GatewayIntentBits, Partials } = require('discord.js');
+const eventsLoader = require('./loader/events-loader');
+const commandsLoader = require('./loader/commands-loader');
 
 process.on('uncaughtException', err => {
-    console.log('######### Uncaught Exception ##########');
     console.log(err);
     process.exit();
 });
+
+console.log('Initializing...');
 
 const client = new Client({
     intents: [
@@ -24,46 +24,7 @@ const client = new Client({
     partials: [Partials.Channel]
 });
 
-client.commands = new Collection();
-
-console.log('Loading commands');
-fs.readdirSync(path.join(__dirname, 'commands'))
-    .filter(fileName => fileName.endsWith('.js'))
-    .map(fileName => require(`./commands/${fileName}`))
-    .sort((c1, c2) => c1.metadata.permissions?.toString().localeCompare(c2.metadata.permissions?.toString()))
-    .forEach(Command => {
-        try {
-            client.commands.set(Command.metadata.commandName.toLowerCase(), Command);
-            Command.metadata.aliases?.forEach(alias => client.commands.set(alias, Command));
-            console.log(
-                `✅ command: [${
-                    Command.metadata.permissions == PermissionFlagsBits.Administrator
-                        ? 'ADM'
-                        : Command.metadata.permissions == PermissionFlagsBits.ManageMessages
-                        ? 'MOD'
-                        : 'ALL'
-                }] ${Command.metadata.commandName}`
-            );
-        } catch (err) {
-            console.log(`❌ command: ${Command.metadata.commandName} [Failed to load]\n${err}`);
-        }
-    });
-
-console.log('Loading events');
-fs.readdirSync(path.join(__dirname, 'events'))
-    .filter(fileName => fileName.endsWith('.js'))
-    .map(fileName => require(`./events/${fileName}`))
-    .forEach(handler => {
-        try {
-            if (handler.execOnce) {
-                client.once(handler.eventName, handler.execute);
-            } else {
-                client.on(handler.eventName, handler.execute);
-            }
-            console.log(`🟢 event: ${handler.eventName}`);
-        } catch (err) {
-            console.log(`🔴 event: ${handler.eventName} [Failed to load]\n${err}`);
-        }
-    });
+commandsLoader.load(client);
+eventsLoader.load(client);
 
 client.login(process.env.BOT_TOKEN).then(() => console.log(`Client logged in`));
