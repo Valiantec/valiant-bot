@@ -7,7 +7,7 @@ const { tryFetchMember, tryFetchUser } = require('../util/discord-utils');
 class Command extends BaseCommand {
     static metadata = {
         commandName: 'profile',
-        aliases: ['user', 'u'],
+        aliases: ['user', 'u', 'p'],
         description: "Shows a member's full profile",
         permissions: PermissionFlagsBits.ManageMessages
     };
