@@ -4,5 +4,6 @@
     "reportsTargetChannel": "",
     "logsChannel": "",
     "welcomeChannel": "",
-    "welcomeMessage": "**Hey {member}, welcome to the server!**"
+    "welcomeMessage": "**Hey {member}, welcome to the server!**",
+    "deleteInvites": false
 }

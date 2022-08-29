@@ -26,7 +26,6 @@ class Command extends BaseCommand {
         }
 
         const embed = new EmbedBuilder()
-            .setDescription(`**Points:** ${profile.points}`)
             .setFooter({ text: `ID: ${profile.id}` })
             .setColor(member.displayColor);
 
@@ -36,10 +35,7 @@ class Command extends BaseCommand {
 
         if (member) {
             embed.setAuthor({ name: member.user.tag, iconURL: member.displayAvatarURL() });
-            embed.setDescription(
-                embed.data.description +
-                    `\n**Created:** ${time(member.user.createdAt)}\n**Joined:** ${time(member.joinedAt)}`
-            );
+            embed.setDescription(`**Created:** ${time(member.user.createdAt)}\n**Joined:** ${time(member.joinedAt)}`);
         } else {
             const user = await tryFetchUser(this.dMsg.client, memberId);
             if (user) {
@@ -47,6 +43,8 @@ class Command extends BaseCommand {
                 embed.setDescription(embed.data.description + `\n**Created:** ${time(user.createdAt)}`);
             }
         }
+
+        embed.setDescription(embed.data.description + `\n**Points:** ${profile.points}`)
 
         if (profile.record) {
             const fields = [];

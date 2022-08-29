@@ -41,7 +41,8 @@ class Command extends BaseCommand {
                         reportsTargetChannel: config.reportsTargetChannel,
                         logsChannel: config.logsChannel,
                         welcomeChannel: config.welcomeChannel,
-                        welcomeMessage: config.welcomeMessage
+                        welcomeMessage: config.welcomeMessage,
+                        deleteInvites: config.deleteInvites
                     },
                     null,
                     1

@@ -2,7 +2,7 @@ const { Message, Events } = require('discord.js');
 const UserError = require('../classes/errors/user-error');
 const activityTracker = require('../service/activity-tracker');
 const guildRepo = require('../data/repository/guild-repo');
-const { forwardMessage } = require('../service/messaging');
+const { forwardMessage, logModerationAction } = require('../service/messaging');
 const { isMod, isAdmin } = require('../util/discord-utils');
 const embedShop = require('../util/embed-shop');
 const { canExecute } = require('../util/utils');
@@ -50,9 +50,9 @@ module.exports = {
             }
         }
 
-        if (msg.content.includes('discord.gg/') && !isAdmin(msg.member)) {
+        if (config.deleteInvites && msg.content.includes('discord.gg/') && !isAdmin(msg.member)) {
             deleteMessage = true;
-            console.log(msg.author.id, msg.content);
+            logModerationAction(msg, `Invite by ${msg.author} [${msg.author.id}] in <#${msg.channelId}> has been deleted.`);
         }
 
         if (!isMod(msg.member) && config.mediaOnlyChannels?.includes(msg.channelId) && msg.attachments.size == 0) {
