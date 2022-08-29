@@ -10,8 +10,6 @@ process.on('uncaughtException', err => {
     process.exit();
 });
 
-console.log('Initializing...');
-
 const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
