@@ -51,7 +51,7 @@ class Command extends BaseCommand {
         if (profile.record) {
             const fields = [];
 
-            if (profile.record.notes) {
+            if (profile.record.notes?.length > 0) {
                 let text = '';
                 profile.record.notes.forEach(note => {
                     text += codeBlock(`Text: ${note.text}\nBy:   ${note.by}\nDate: ${note.date}`);
@@ -59,7 +59,7 @@ class Command extends BaseCommand {
                 fields.push({ name: 'Notes:', value: text });
             }
 
-            if (profile.record.warnings) {
+            if (profile.record.warnings?.length > 0) {
                 let text = '';
                 profile.record.warnings.forEach(warning => {
                     text += codeBlock(`Reason: ${warning.text}\nBy:     ${warning.by}\nDate:   ${warning.date}`);
@@ -67,7 +67,7 @@ class Command extends BaseCommand {
                 fields.push({ name: 'Warnings:', value: text });
             }
 
-            if (profile.record.timeouts) {
+            if (profile.record.timeouts?.length > 0) {
                 let text = '';
                 profile.record.timeouts.forEach(timeout => {
                     text += codeBlock(
@@ -77,7 +77,7 @@ class Command extends BaseCommand {
                 fields.push({ name: 'Timeouts:', value: text });
             }
 
-            if (profile.record.bans) {
+            if (profile.record.bans?.length > 0) {
                 let text = '';
                 profile.record.bans.forEach(ban => {
                     text += codeBlock(`Reason: ${ban.text}\nBy:     ${ban.by}\nDate:   ${ban.date}`);

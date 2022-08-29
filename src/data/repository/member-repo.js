@@ -10,6 +10,10 @@ async function getById(guildId, memberId, createIfNotExist = true) {
     }
 }
 
+async function getByMember(member, createIfNotExist = true) {
+    return getById(member.guild.id, member.id, createIfNotExist);
+}
+
 async function create(guildId, memberId, tag = null) {
     const profile = {
         id: memberId,
@@ -34,6 +38,7 @@ async function update(guildId, profile) {
 
 module.exports = {
     getById,
+    getByMember,
     create,
     update
 };

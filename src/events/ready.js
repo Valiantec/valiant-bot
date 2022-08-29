@@ -21,6 +21,6 @@ module.exports = {
 
         console.log(`${client.user.username} is running on (${guilds.size}) guilds: ${guildNames.join(', ')}`);
 
-        activityTracker.startTracking();
+        activityTracker.startTracking(client);
     }
 };

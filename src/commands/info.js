@@ -18,7 +18,7 @@ class Command extends BaseCommand {
                 { name: 'Servers', value: serverCount.toString() }
             ])
             .setThumbnail(bot.avatarURL())
-            .setColor('#ffffff');
+            .setColor(this.dMsg.guild.members.me.displayColor);
         await this.dMsg.channel.send({ embeds: [embed] });
     }
 }

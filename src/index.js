@@ -2,8 +2,8 @@ require('dotenv').config();
 require('./util/logger').integrate();
 
 const { Client, GatewayIntentBits, Partials } = require('discord.js');
-const eventsLoader = require('./loader/events-loader');
-const commandsLoader = require('./loader/commands-loader');
+const eventsLoader = require('./loaders/events-loader');
+const commandsLoader = require('./loaders/commands-loader');
 
 process.on('uncaughtException', err => {
     console.log(err);

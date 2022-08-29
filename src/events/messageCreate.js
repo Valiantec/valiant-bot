@@ -32,7 +32,7 @@ module.exports = {
         }
 
         // Notify member message
-        activityTracker.notifyActivity({ id: msg.member.id, tag: msg.author.tag }, msg.guildId);
+        activityTracker.notifyActivity(msg.member, msg.guildId);
 
         let deleteMessage = false;
 
@@ -69,11 +69,11 @@ module.exports = {
                 return;
             }
 
-            console.log(
-                `[${Command.metadata.commandName}] used by ${msg.author.tag} (${msg.author.id}) in ${msg.guild.name} (${msg.guild.id})`
-            );
-
             const args = msg.content.substring(config.prefix.length).trim().substring(commandName.length).trimStart();
+
+            console.log(
+                `[${Command.metadata.commandName}] used by ${msg.author.tag} (${msg.author.id}) in ${msg.guild.name} (${msg.guildId}). args: ${args}`
+            );
 
             const command = new Command(msg, args);
 

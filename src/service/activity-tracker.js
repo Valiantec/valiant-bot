@@ -1,21 +1,10 @@
+const { Client, Guild, ChannelType, GuildMember } = require('discord.js');
 const memberRepo = require('../data/repository/member-repo');
+const guildRepo = require('../data/repository/guild-repo');
 
-const membersActiveInLastMinute = new Map();
+const recentlyActiveMembersPerGuild = new Map();
 
 let trackingIntervalId;
-
-async function distributePoints() {
-    for (const [guildId, memberSet] of membersActiveInLastMinute) {
-        for (const member of [...memberSet]) {
-            memberRepo.getById(guildId, member.id).then(profile => {
-                profile.points++;
-                profile.tag = member.tag || profile.tag;
-                memberRepo.update(guildId, profile);
-            });
-        }
-    }
-    membersActiveInLastMinute.clear();
-}
 
 // /**
 //      *
@@ -51,42 +40,84 @@ async function distributePoints() {
 //     }
 // }
 
-// /**
-//      *
-//      * @param {Guild} guild
-//      */
-//  async function trackActivity(guild) {
-//     await guild.channels.fetch();
+/**
+ *
+ * @param {GuildMember} member
+ * @returns {string} The name of the new rank
+ */
+async function updateMemberRank(member) {
+    const ranks = (await guildRepo.getConfig(member.guild.id)).ranks?.sort((r1, r2) => r2.threshold - r1.threshold);
 
-//     // track voice activity
-//     const channels = guild.channels.cache.filter(
-//         (c) => c.type === 'GUILD_VOICE' && !readConfig().activityExcludedChannels.some((id) => id == c.id)
-//     );
-//     for (const [channelId, channel] of channels) {
-//         for (const [memberId, member] of channel.members) {
-//             if (!member.voice.mute && !member.user.bot) {
-//                 this.addPoints(member, 1, 'voice-chat');
-//             }
-//         }
-//     }
+    if (!ranks || ranks.length == 0) {
+        return;
+    }
 
-//     // text activity cooldown reset
-//     this.messagedPrev60Secs.clear();
-// }
-
-module.exports = {
-    notifyActivity: (member, guildId) => {
-        let memberSet = membersActiveInLastMinute.get(guildId);
-
-        if (!memberSet) {
-            memberSet = new Set();
-            membersActiveInLastMinute.set(guildId, memberSet);
+    for (const rank of ranks) {
+        if (member.roles.cache.has(rank.roleId)) {
+            return;
         }
 
-        memberSet.add(member);
-    },
-    startTracking: () => {
+        const profile = await memberRepo.getByMember(member);
+
+        if (profile.points >= rank.threshold) {
+            const rolesToRemove = ranks.filter(r => r.roleId != rank.roleId).map(r => r.roleId);
+            const newRole = await member.guild.roles.fetch(rank.roleId);
+
+            member.roles.set(member.roles.cache.filter(r => !rolesToRemove.includes(r.id)).set(newRole.id, newRole), 'Rank Up');
+
+            return newRole;
+        }
+    }
+}
+
+async function distributePoints() {
+    for (const [guildId, memberSet] of recentlyActiveMembersPerGuild) {
+        for (const member of [...memberSet]) {
+            memberRepo.getByMember(member).then(profile => {
+                profile.points++;
+                profile.tag = member.user.tag || profile.tag;
+                memberRepo.update(guildId, profile);
+                updateMemberRank(member);
+            });
+        }
+    }
+    recentlyActiveMembersPerGuild.clear();
+}
+
+/**
+ *
+ * @param {Client} client
+ */
+function determineVCPoints(client) {
+    client.guilds.cache.forEach(guild => {
+        guild.channels.cache
+            .filter(channel => channel.type == ChannelType.GuildVoice)
+            .forEach(channel => {
+                channel.members.forEach(member => {
+                    if (!member.voice.mute && !member.voice.deaf && !member.user.bot) {
+                        notifyActivity(member, guild.id);
+                    }
+                });
+            });
+    });
+}
+
+function notifyActivity(member, guildId) {
+    let memberSet = recentlyActiveMembersPerGuild.get(guildId);
+
+    if (!memberSet) {
+        memberSet = new Set();
+        recentlyActiveMembersPerGuild.set(guildId, memberSet);
+    }
+
+    memberSet.add(member);
+}
+
+module.exports = {
+    notifyActivity,
+    startTracking: client => {
         trackingIntervalId = setInterval(() => {
+            determineVCPoints(client);
             distributePoints();
         }, 60 * 1000);
     },
