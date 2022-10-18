@@ -4,25 +4,25 @@ const UserError = require('../classes/errors/user-error');
 const memberRepo = require('../data/repository/member-repo');
 
 class Command extends BaseCommand {
-    static metadata = {
-        commandName: 'points',
-        description: 'Check how many points a member has'
-    };
+  static metadata = {
+    commandName: 'points',
+    description: 'Check how many points a member has'
+  };
 
-    async execute() {
-        const args = this.parseArgs(1);
+  async execute() {
+    const args = this.parseArgs(1);
 
-        const memberId = args[0]?.replace(/[<@>]/g, '') || this.dMsg.member.id;
+    const memberId = args[0]?.replace(/[<@>]/g, '') || this.dMsg.member.id;
 
-        const profile = await memberRepo.getById(this.dMsg.guildId, memberId);
-        if (profile) {
-            this.dMsg.channel.send({
-                embeds: [embedShop.oneLineEmbed(`<@${memberId}> has \`${profile.points}\` points`)]
-            });
-        } else {
-            throw new UserError('Member not found');
-        }
+    const profile = await memberRepo.getById(this.dMsg.guildId, memberId);
+    if (profile) {
+      this.dMsg.channel.send({
+        embeds: [embedShop.oneLineEmbed(`<@${memberId}> has \`${profile.points}\` points`)]
+      });
+    } else {
+      throw new UserError('Member not found');
     }
+  }
 }
 
 module.exports = Command;

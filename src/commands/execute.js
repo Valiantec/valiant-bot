@@ -3,30 +3,30 @@ const BaseCommand = require('../classes/base-command');
 const UserError = require('../classes/errors/user-error');
 
 class Command extends BaseCommand {
-    static metadata = {
-        commandName: 'execute',
-        description: 'executes javascript code',
-        aliases: ['exec', 'js'],
-        botOwnerOnly: true
-    };
+  static metadata = {
+    commandName: 'execute',
+    description: 'executes javascript code',
+    aliases: ['exec', 'js'],
+    botOwnerOnly: true
+  };
 
-    async execute() {
-        const arg = this.parseArgs(0);
+  async execute() {
+    const arg = this.parseArgs(0);
 
-        let code;
-        if (arg.startsWith('```js')) {
-            code = arg.slice(5, -3);
-        } else if (arg.startsWith('```')) {
-            code = arg.slice(3, -3);
-        } else {
-            code = arg;
-        }
+    let code;
+    if (arg.startsWith('```js')) {
+      code = arg.slice(5, -3);
+    } else if (arg.startsWith('```')) {
+      code = arg.slice(3, -3);
+    } else {
+      code = arg;
+    }
 
-        try {
-            // eslint-disable-next-line prefer-const
-            let output = '';
-            
-            const func = eval(`
+    try {
+      // eslint-disable-next-line prefer-const
+      let output = '';
+
+      const func = eval(`
 () => {
     const console = {
         log: (value) => {
@@ -41,12 +41,14 @@ class Command extends BaseCommand {
     }
 
 }`);
-            const result = func();
-            await this.dMsg.channel.send(`${output ? '**Output:**' + codeBlock(output) : ''}${result ? '**Returned:**\n' + codeBlock(result) : ''}`);
-        } catch (err) {
-            throw new UserError(err.message);
-        }
+      const result = func();
+      await this.dMsg.channel.send(
+        `${output ? '**Output:**' + codeBlock(output) : ''}${result ? '**Returned:**\n' + codeBlock(result) : ''}`
+      );
+    } catch (err) {
+      throw new UserError(err.message);
     }
+  }
 }
 
 module.exports = Command;

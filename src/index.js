@@ -6,20 +6,20 @@ const eventsLoader = require('./loaders/events-loader');
 const commandsLoader = require('./loaders/commands-loader');
 
 process.on('uncaughtException', err => {
-    console.log(err);
-    process.exit();
+  console.log(err);
+  process.exit();
 });
 
 const client = new Client({
-    intents: [
-        GatewayIntentBits.Guilds,
-        GatewayIntentBits.GuildMembers,
-        GatewayIntentBits.GuildMessages,
-        GatewayIntentBits.MessageContent,
-        GatewayIntentBits.GuildVoiceStates,
-        GatewayIntentBits.DirectMessages
-    ],
-    partials: [Partials.Channel]
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMembers,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent,
+    GatewayIntentBits.GuildVoiceStates,
+    GatewayIntentBits.DirectMessages
+  ],
+  partials: [Partials.Channel]
 });
 
 commandsLoader.load(client);

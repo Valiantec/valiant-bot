@@ -6,12 +6,12 @@ const ID_SEPARATOR = /[,;]/;
  * @returns {string}
  */
 const getFirstWord = text => {
-    if (!text) {
-        return '';
-    }
-    text = text.trimStart();
-    const endIndex = text.indexOf(' ');
-    return text.substring(0, endIndex == -1 ? text.length : endIndex);
+  if (!text) {
+    return '';
+  }
+  text = text.trimStart();
+  const endIndex = text.indexOf(' ');
+  return endIndex == -1 ? text : text.substring(0, endIndex);
 };
 
 /**
@@ -20,12 +20,12 @@ const getFirstWord = text => {
  * @returns {string} The remaining text
  */
 const removeFirstWord = text => {
-    if (!text) {
-        return '';
-    }
-    text = text.trim();
-    const startIndex = text.indexOf(' ') + 1;
-    return startIndex != 0 ? text.substring(startIndex) : '';
+  if (!text) {
+    return '';
+  }
+  text = text.trim();
+  const startIndex = text.indexOf(' ') + 1;
+  return startIndex != 0 ? text.substring(startIndex).trim() : '';
 };
 
 /**
@@ -34,11 +34,11 @@ const removeFirstWord = text => {
  * @returns {string[]}
  */
 const multiIDStringToList = ids => {
-    return ids.split(ID_SEPARATOR).map(id => id.trim());
+  return ids.split(ID_SEPARATOR).map(id => id.trim());
 };
 
 module.exports = {
-    getFirstWord,
-    removeFirstWord,
-    multiIDStringToList
+  getFirstWord,
+  removeFirstWord,
+  multiIDStringToList
 };

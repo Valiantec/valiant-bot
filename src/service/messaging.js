@@ -9,7 +9,10 @@ const guildRepo = require('../data/repository/guild-repo');
  * @throws {DiscordAPIError} if the bot can't send a message to the target
  */
 async function forwardMessage(text, target, sourceMsg = null) {
-    await target?.send({ content: text, files: sourceMsg ? [...sourceMsg.attachments.values()] : [] });
+  await target?.send({
+    content: text,
+    files: sourceMsg ? [...sourceMsg.attachments.values()] : []
+  });
 }
 
 /**
@@ -20,9 +23,10 @@ async function forwardMessage(text, target, sourceMsg = null) {
  * @throws {DiscordAPIError} if the bot can't send a message to the target
  */
 async function tryForwardMessage(text, target, sourceMsg = null) {
-    await forwardMessage(text, target, sourceMsg).catch(() =>
-        sourceMsg?.channel.send('❌ Message failed to send').catch(() => {})
-    );
+  await forwardMessage(text, target, sourceMsg).catch(err => {
+    sourceMsg?.channel.send('❌ Message failed to send').catch(() => {});
+    throw err;
+  });
 }
 
 /**
@@ -31,15 +35,16 @@ async function tryForwardMessage(text, target, sourceMsg = null) {
  * @param {string} text
  */
 async function logModerationAction(dMsg, text) {
-    const config = await guildRepo.getConfig(dMsg.guildId);
-    if (config.logsChannel) {
-        const logsChannel = await dMsg.guild?.channels.fetch(config.logsChannel);
-        await logsChannel.send(text);
-    }
+  const config = await guildRepo.getConfig(dMsg.guildId);
+  if (config.logging.enabled) {
+    const channelId = config.logging.overrides.moderation || config.logging.channelId;
+    const logsChannel = await dMsg.guild.channels.fetch(channelId);
+    await logsChannel.send(text);
+  }
 }
 
 module.exports = {
-    forwardMessage,
-    tryForwardMessage,
-    logModerationAction
+  forwardMessage,
+  tryForwardMessage,
+  logModerationAction
 };

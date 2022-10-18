@@ -1,9 +1,45 @@
 {
-    "prefix": "!",
-    "reportsChannel": "",
-    "reportsTargetChannel": "",
-    "logsChannel": "",
-    "welcomeChannel": "",
-    "welcomeMessage": "**Hey {member}, welcome to the server!**",
-    "deleteInvites": false
+  "prefix": "!",
+  "logging": {
+    "enabled": false,
+    "channelId": "",
+    "overrides": {
+      "messageDelete": "",
+      "messageEdit": "",
+      "memberJoin": "",
+      "memberLeave": "",
+      "voice": "",
+      "moderation": ""
+    }
+  },
+  "welcome": {
+    "enabled": false,
+    "channelId": "",
+    "message": "**Welcome {member}, hope you enjoy your stay!**"
+  },
+  "automod": {
+    "enabled": false,
+    "keywordBlocker": {
+      "enabled": false,
+      "keywords": [],
+      "blockServerInvites": false,
+      "punishment": "timeout",
+      "duration": 60
+    }
+  },
+  "tickets": {
+    "enabled": false,
+    "reportChannelId": "",
+    "inboxChannelId": ""
+  },
+  "points": {
+    "enabled": false,
+    "messages": true,
+    "voice": true
+  },
+  "ranking": {
+    "enabled": false,
+    "rankList": []
+  },
+  "mediaOnlyChannels": []
 }

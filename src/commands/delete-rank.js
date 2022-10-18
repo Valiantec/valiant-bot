@@ -1,16 +1,16 @@
 const guildRepo = require('../data/repository/guild-repo');
 const BaseCommand = require('../classes/base-command');
 const UserError = require('../classes/errors/user-error');
-const InvalidArgumentsError = require('../classes/errors/invalid-arguments-error');
 const { oneLineEmbed } = require('../util/embed-shop');
 const { PermissionFlagsBits } = require('discord.js');
 
 class Command extends BaseCommand {
   static metadata = {
-    commandName: 'createrank',
-    aliases: ['addrank', 'cr'],
-    description: 'Create a rank (role) that will be assigned to members when they reach a certain number of points',
-    syntax: '{prefix}createrank <role-id> <point-threshold>',
+    commandName: 'deleterank',
+    aliases: ['removerank', 'dr'],
+    description: 'Delete a rank and optionally delete the role associated with it',
+    syntax: '{prefix}deleterank <role-id> <optional-delete-role>',
+    examples: ['{prefix}deleterank 123123123', '{prefix}deleterank 123123123 delete-role'],
     permissions: PermissionFlagsBits.Administrator
   };
 
@@ -18,11 +18,7 @@ class Command extends BaseCommand {
     const args = this.parseArgs(2);
 
     const roleId = args[0].replace(/[<@&>]/g, '');
-    const threshold = parseInt(args[1]);
-
-    if (isNaN(threshold)) {
-      throw new InvalidArgumentsError();
-    }
+    const deleteRole = args[1]?.toLowerCase() === 'delete-role';
 
     const role = await this.dMsg.guild.roles.fetch(roleId);
 
@@ -34,12 +30,14 @@ class Command extends BaseCommand {
 
     config.ranking.rankList = config.ranking.rankList.filter(r => r.roleId != roleId);
 
-    config.ranking.rankList.push({ roleId, threshold });
-
     await guildRepo.updateConfig(this.dMsg.guildId, config);
 
+    if (deleteRole && role.editable) {
+      await role.delete('Rank deleted');
+    }
+
     await this.dMsg.channel.send({
-      embeds: [oneLineEmbed(`Rank ${role} created with threshold \`${threshold}\``, 'success')]
+      embeds: [oneLineEmbed(`Rank ${deleteRole ? `and role **${role.name}**` : role} deleted`, 'success')]
     });
   }
 }

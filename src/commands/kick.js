@@ -2,14 +2,15 @@ const { PermissionFlagsBits } = require('discord.js');
 const BaseCommand = require('../classes/base-command');
 const UserError = require('../classes/errors/user-error');
 const moderation = require('../service/moderation');
+const { oneLineEmbed } = require('../util/embed-shop');
 const { multiIDStringToList } = require('../util/str-utils');
 
 class Command extends BaseCommand {
   static metadata = {
-    commandName: 'ban',
-    description: 'Bans a member, preventing them from rejoining the server',
-    syntax: '{prefix}ban <memberIDs> <reason>',
-    examples: ['{prefix}ban 123123123 Trolling in vc', '{prefix}ban 123123123,456456456 Banned for a reason'],
+    commandName: 'kick',
+    description: 'Kicks a member from the server',
+    syntax: '{prefix}kick <memberIDs> <reason>',
+    examples: ['{prefix}kick 123123123 Inappropriate name', '{prefix}kick 123123123,456456456 Suspected raid'],
     permissions: PermissionFlagsBits.ManageMessages
   };
 
@@ -20,16 +21,16 @@ class Command extends BaseCommand {
     const text = args[1];
 
     if (!text) {
-      throw new UserError("You can't ban a member without providing a reason");
+      throw new UserError("You can't kick a member without providing a reason");
     }
 
     multiIDStringToList(memberIds).forEach(async memberId => {
       try {
-        await moderation.doBan(this.dMsg, memberId, text);
-        this.dMsg.channel.send(`✅ Banned <@${memberId}>`).catch(err => console.log(err));
+        await moderation.doKick(this.dMsg, memberId, text);
+        this.dMsg.channel.send(`✅ Kicked <@${memberId}>`).catch(err => console.log(err));
       } catch (e) {
         console.log(e);
-        this.dMsg.channel.send(e.message + ` <@${memberId}>`).catch(err => console.log(err));
+        this.dMsg.channel.send({embeds:[oneLineEmbed(e.message, 'error')]}).catch(err => console.log(err));
       }
     });
   }

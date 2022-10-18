@@ -8,29 +8,29 @@ const { Message } = require('discord.js');
  * @param {string} text
  */
 async function doNote(dMsg, userId, text) {
-    const user = await dMsg.client.users.fetch(userId);
+  const user = await dMsg.client.users.fetch(userId);
 
-    const profile = await memberRepo.getById(dMsg.guildId, userId);
+  const profile = await memberRepo.getById(dMsg.guildId, userId);
 
-    profile.tag = user.tag;
+  profile.tag = user.tag;
 
-    if (!profile.record) {
-        profile.record = {};
-    }
+  if (!profile.record) {
+    profile.record = {};
+  }
 
-    if (!profile.record.notes) {
-        profile.record.notes = [];
-    }
+  if (!profile.record.notes) {
+    profile.record.notes = [];
+  }
 
-    profile.record.notes.push({
-        text: text,
-        by: dMsg.author.tag,
-        date: new Date().toISOString()
-    });
+  profile.record.notes.push({
+    text: text,
+    by: dMsg.author.tag,
+    date: new Date().toISOString()
+  });
 
-    await memberRepo.update(dMsg.guildId, profile);
+  await memberRepo.update(dMsg.guildId, profile);
 }
 
 module.exports = {
-    doNote
+  doNote
 };

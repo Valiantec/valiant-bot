@@ -2,38 +2,34 @@ const BaseCommand = require('../classes/base-command');
 const { EmbedBuilder } = require('discord.js');
 
 class Command extends BaseCommand {
-    static metadata = {
-        commandName: 'poll',
-        description: 'Have the bot start a poll'
-    };
+  static metadata = {
+    commandName: 'poll',
+    description: 'Have the bot start a poll'
+  };
 
-    async execute() {
-        const args = this.parseArgs(0).split(';');
+  async execute() {
+    const args = this.parseArgs(0).split(';');
 
-        const embed = new EmbedBuilder()
-            .setTitle(args[args.length - 1].trim())
-            .setColor('#ffffff');
-        let body = '';
+    const embed = new EmbedBuilder().setTitle(args[args.length - 1].trim()).setColor('#ffffff');
+    let body = '';
 
-        const reactions = new Set();
+    const reactions = new Set();
 
-        args.forEach((arg, i) => {
-            arg = arg.trim();
-            if (i < args.length - 1) {
-                const optionEmote = arg.substring(0, arg.indexOf(' '));
-                const optionText = arg.substring(arg.indexOf(' ') + 1);
+    args.forEach((arg, i) => {
+      arg = arg.trim();
+      if (i < args.length - 1) {
+        const optionEmote = arg.substring(0, arg.indexOf(' '));
+        const optionText = arg.substring(arg.indexOf(' ') + 1);
 
-                body += `${optionEmote} : ${optionText}\n`;
-                reactions.add(optionEmote);
-            }
-        });
+        body += `${optionEmote} : ${optionText}\n`;
+        reactions.add(optionEmote);
+      }
+    });
 
-        embed.setDescription(body.trim());
+    embed.setDescription(body.trim());
 
-        await this.dMsg.channel
-            .send({ embeds: [embed] })
-            .then(msg => reactions.forEach(reaction => msg.react(reaction)));
-    }
+    await this.dMsg.channel.send({ embeds: [embed] }).then(msg => reactions.forEach(reaction => msg.react(reaction)));
+  }
 }
 
 module.exports = Command;

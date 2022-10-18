@@ -1,4 +1,4 @@
-const { Client, Guild, ChannelType, GuildMember } = require('discord.js');
+const { Client, ChannelType, GuildMember } = require('discord.js');
 const memberRepo = require('../data/repository/member-repo');
 const guildRepo = require('../data/repository/guild-repo');
 
@@ -6,122 +6,98 @@ const recentlyActiveMembersPerGuild = new Map();
 
 let trackingIntervalId;
 
-// /**
-//      *
-//      * @param {GuildMember} member
-//      * @param {MemberProfile} memberProfile
-//      * @param {boolean} shouldSendRankUpMessage
-//      */
-//  async function determineRank(member, shouldSendRankUpMessage = true) {
-//     let memberProfile;
-//     try {
-//         memberProfile = readMember(member.id);
-//     } catch (err) {
-//         memberProfile = new MemberProfile(member.id, member.user.tag);
-//         writeMember(memberProfile);
-//     }
-//     const ranks = [...readConfig().ranks].reverse();
-//     const rankIds = ranks.map((r) => r.roleId);
-
-//     for (const rank of ranks) {
-//         if (memberProfile.points >= rank.threshold) {
-//             if (member.roles.cache.has(rank.roleId)) {
-//                 break;
-//             }
-//             await member.roles.remove(rankIds);
-//             member.roles.add(rank.roleId).then((m) => {
-//                 const rankName = m.roles.cache.get(rank.roleId).name;
-//                 if (shouldSendRankUpMessage) {
-//                     this.sendRankUpMessage(readConfig().rankUpMessagesChannel, member, rankName);
-//                 }
-//             });
-//             break;
-//         }
-//     }
-// }
-
 /**
  *
  * @param {GuildMember} member
  * @returns {string} The name of the new rank
  */
-async function updateMemberRank(member) {
-    const ranks = (await guildRepo.getConfig(member.guild.id)).ranks?.sort((r1, r2) => r2.threshold - r1.threshold);
+async function updateMemberRank(member, points = null) {
+  const ranks = (await guildRepo.getConfig(member.guild.id)).ranking.rankList?.sort(
+    (r1, r2) => r2.threshold - r1.threshold
+  );
 
-    if (!ranks || ranks.length == 0) {
-        return;
+  if (!ranks || ranks.length == 0) {
+    return;
+  }
+
+  for (const rank of ranks) {
+    if (member.roles.cache.has(rank.roleId)) {
+      return;
     }
 
-    for (const rank of ranks) {
-        if (member.roles.cache.has(rank.roleId)) {
-            return;
-        }
+    const memberPoints = points ?? (await memberRepo.getByMember(member)).points;
 
-        const profile = await memberRepo.getByMember(member);
+    if (memberPoints >= rank.threshold) {
+      const rolesToRemove = ranks.filter(r => r.roleId != rank.roleId).map(r => r.roleId);
+      const newRole = await member.guild.roles.fetch(rank.roleId);
 
-        if (profile.points >= rank.threshold) {
-            const rolesToRemove = ranks.filter(r => r.roleId != rank.roleId).map(r => r.roleId);
-            const newRole = await member.guild.roles.fetch(rank.roleId);
+      member.roles.set(
+        member.roles.cache.filter(r => !rolesToRemove.includes(r.id)).set(newRole.id, newRole),
+        'Rank Up'
+      );
 
-            member.roles.set(member.roles.cache.filter(r => !rolesToRemove.includes(r.id)).set(newRole.id, newRole), 'Rank Up');
-
-            return newRole;
-        }
+      return newRole;
     }
+  }
 }
 
 async function distributePoints() {
-    for (const [guildId, memberSet] of recentlyActiveMembersPerGuild) {
-        for (const member of [...memberSet]) {
-            memberRepo.getByMember(member).then(profile => {
-                profile.points++;
-                profile.tag = member.user.tag || profile.tag;
-                memberRepo.update(guildId, profile);
-                updateMemberRank(member);
-            });
-        }
+  for (const [guildId, memberSet] of recentlyActiveMembersPerGuild) {
+    for (const member of [...memberSet]) {
+      memberRepo.getByMember(member).then(profile => {
+        profile.points++;
+        profile.tag = member.user.tag;
+        memberRepo.update(guildId, profile);
+        updateMemberRank(member, profile.points);
+      });
     }
-    recentlyActiveMembersPerGuild.clear();
+  }
+  recentlyActiveMembersPerGuild.clear();
 }
 
 /**
- *
+ * Possible bad performance
  * @param {Client} client
+ *
  */
-function determineVCPoints(client) {
-    client.guilds.cache.forEach(guild => {
-        guild.channels.cache
-            .filter(channel => channel.type == ChannelType.GuildVoice)
-            .forEach(channel => {
-                channel.members.forEach(member => {
-                    if (!member.voice.mute && !member.voice.deaf && !member.user.bot) {
-                        notifyActivity(member, guild.id);
-                    }
-                });
-            });
-    });
+async function determineVCPoints(client) {
+  for (const [_, guild] of client.guilds.cache) {
+    const config = await guildRepo.getConfig(guild.id);
+    if (config.points.enabled && config.points.voice) {
+      guild.channels.cache
+        .filter(channel => channel.type == ChannelType.GuildVoice)
+        .forEach(channel => {
+          channel.members.forEach(member => {
+            if (!member.user.bot && !member.voice.mute && !member.voice.deaf) {
+              notifyActivity(member);
+            }
+          });
+        });
+    }
+  }
 }
 
-function notifyActivity(member, guildId) {
-    let memberSet = recentlyActiveMembersPerGuild.get(guildId);
+function notifyActivity(member) {
+  let memberSet = recentlyActiveMembersPerGuild.get(member.guild.id);
 
-    if (!memberSet) {
-        memberSet = new Set();
-        recentlyActiveMembersPerGuild.set(guildId, memberSet);
-    }
+  if (!memberSet) {
+    memberSet = new Set();
+    recentlyActiveMembersPerGuild.set(member.guild.id, memberSet);
+  }
 
-    memberSet.add(member);
+  memberSet.add(member);
 }
 
 module.exports = {
-    notifyActivity,
-    startTracking: client => {
-        trackingIntervalId = setInterval(() => {
-            determineVCPoints(client);
-            distributePoints();
-        }, 60 * 1000);
-    },
-    stopTracking: () => {
-        clearInterval(trackingIntervalId);
-    }
+  notifyActivity,
+  startTracking: client => {
+    trackingIntervalId = setInterval(async () => {
+      await determineVCPoints(client);
+      distributePoints();
+    }, 60 * 1000);
+  },
+  stopTracking: () => {
+    clearInterval(trackingIntervalId);
+  },
+  updateMemberRank
 };

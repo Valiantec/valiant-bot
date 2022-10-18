@@ -4,34 +4,31 @@ const { tryFetchMember } = require('../util/discord-utils');
 const { oneLineEmbed } = require('../util/embed-shop');
 
 class Command extends BaseCommand {
-    static metadata = {
-        commandName: 'joindate',
-        description: 'Shows the date at which a member has joined this server',
-        aliases: ['joined']
-    };
+  static metadata = {
+    commandName: 'joindate',
+    description: 'Shows the date at which a member has joined this server',
+    aliases: ['joined']
+  };
 
-    async execute() {
-        const args = this.parseArgs(1);
+  async execute() {
+    const args = this.parseArgs(1);
 
-        const memberId = args[0];
-        
-        const member = memberId ? await tryFetchMember(this.dMsg.guild, memberId) : this.dMsg.member;
+    const memberId = args[0]?.replace(/[<@>]/g, '');
 
-        if (!member) {
-            throw new MemberNotFoundError();
-        }
+    const member = memberId ? await tryFetchMember(this.dMsg.guild, memberId) : this.dMsg.member;
 
-        await this.dMsg.channel.send({
-            embeds: [
-                oneLineEmbed(
-                    `${member} joined the server on \`${member.joinedAt
-                        .toISOString()
-                        .split('.')[0]
-                        .replace('T', '  ')}\``
-                )
-            ]
-        });
+    if (!member) {
+      throw new MemberNotFoundError();
     }
+
+    await this.dMsg.channel.send({
+      embeds: [
+        oneLineEmbed(
+          `${member} joined the server on \`${member.joinedAt.toISOString().split('.')[0].replace('T', '  ')}\``
+        )
+      ]
+    });
+  }
 }
 
 module.exports = Command;
